@@ -1,0 +1,62 @@
+{
+  "worldMap": {
+    "backgroundColor": "#1E1E20",
+    "strokeColor": "#82cab7",
+    "highlightColor": "#14647D",
+    "strokeWidth": 1.5
+  },
+  "countryMap": {
+    "backgroundColor": "#1E1E20",
+    "strokeColor": "#82cab7",
+    "strokeWidth": 3,
+    "highlightColor": "#14647D",
+    "factoryLocationColor": "#DB9E36"
+  },
+  "factoryMap": {
+    "factoryBackgroundImageHeight": {
+      "Mahachai": 638
+    },
+    "factory": {
+      "viewColor": "rgba(0, 0, 0, 0.0)",
+      "strokeColor": "#82cab7",
+      "strokeWidth": 3
+    },
+    "activePlant": {
+      "viewColor": "rgba(169, 207, 84, 0.2)",
+      "strokeColor": "#A9CF54",
+      "labelColor": "#A9CF54",
+      "strokeWidth": 3
+    },
+    "inactivePlant": {
+      "viewColor": "rgba(151, 156, 156, 0.2)",
+      "strokeColor": "#979C9C",
+      "labelColor": "#979C9C",
+      "strokeWidth": 3
+    }
+  },
+  "plantMap": {
+    "plant": {
+      "viewColor": "#1e1e20",
+      "strokeColor": "#82cab7",
+      "strokeWidth": 3
+    },
+    "activeLine": {
+      "viewColor": "rgba(169, 207, 84, 0.2)",
+      "strokeColor": "#A9CF54",
+      "labelColor": "#A9CF54",
+      "strokeWidth": 3
+    },
+    "inactiveLine": {
+      "viewColor": "rgba(151, 156, 156, 0.2)",
+      "strokeColor": "#979C9C",
+      "labelColor": "#979C9C",
+      "strokeWidth": 3
+    },
+    "disconnectLine": {
+      "viewColor": "rgba(255, 20, 147, 0.2)",
+      "strokeColor": "#ff1493",
+      "labelColor": "#ff1493",
+      "strokeWidth": 3
+    }
+  }
+}

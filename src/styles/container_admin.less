@@ -1,0 +1,52 @@
+#admin-container {
+  .header {
+    background: #fff;
+    padding: 0;
+    flex-direction: row;
+    display: inline-flex;
+  }
+  .content {
+    margin: 24px 16px;
+    padding: 24px;
+    background: #fff;
+    min-height: 280;
+  }
+
+  .ant-layout {
+    height: 100vh;
+  }
+  .trigger {
+    font-size: 18px;
+    line-height: 64px;
+    padding: 0 16px;
+    cursor: pointer;
+    transition: color .3s;
+  }
+  .trigger:hover {
+    color: #108ee9;
+  }
+  .logo {
+    height: 32px;
+    background: #333;
+    border-radius: 6px;
+    margin: 16px;
+  }
+  .ant-layout-sider-collapsed {
+    .anticon {
+      font-size: 16px;
+    }
+    .nav-text {
+      display: none;
+    }
+  }
+  // adjust nav-bar side-menu tabs font-size
+  .ant-menu-item {
+    font-size: @font-size-side-menu;
+  }
+  .ant-breadcrumb {
+    font-size: @font-size-nav-bar;
+  }
+  .ant-tabs-tab {
+    font-size: @font-size-tabs;
+  }
+}

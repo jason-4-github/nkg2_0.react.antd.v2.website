@@ -1,0 +1,28 @@
+{
+  "GA": {
+    "image": {
+      "width": "800px",
+      "height": "450px",
+      "src": "/images/layout.png"
+    },
+    "isArrow": true,
+    // [wid, top, left]
+    "bigLight": {
+      "Router CV": ["75px", "275px", "542px"],
+      "Buffer CV": ["72px", "289px", "468px"],
+      "Transfer CV": ["87px", "371px", "400px"],
+      "ICT1 CV": ["61px", "163px", "350px"],
+      "ICT2 CV": ["61px", "336px", "350px"],
+      "ICT1": ["56px", "54px", "264px"],
+      "ICT2": ["56px", "446px", "264px"]
+    },
+    // [top, left]
+    "smallLight": {
+      "ICT1 CV": [["225px", "349px"], ["225px", "331px"]],
+      "ICT2 CV": [["285px", "349px"], ["225px", "349px"]],
+      "ICT1": [["150px", "297px"], ["165px", "297px"], ["165px", "270px"],
+              ["150px", "270px"], ["175px", "247px"], ["158px", "247px"]],
+      "ICT2": [["285px", "349px"], ["225px", "349px"]]
+    }
+  }
+}
