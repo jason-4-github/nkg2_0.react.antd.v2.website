@@ -26,6 +26,15 @@ import {
   MAP_CONNECT_REQUEST,
   MAP_CONNECT_SUCCESS,
   MAP_CONNECT_FAILURE,
+  WORLD_MAP_REQUEST,
+  WORLD_MAP_SUCCESS,
+  WORLD_MAP_FAILURE,
+  FACTORY_MAP_REQUEST,
+  FACTORY_MAP_SUCCESS,
+  FACTORY_MAP_FAILURE,
+  PLANT_MAP_REQUEST,
+  PLANT_MAP_SUCCESS,
+  PLANT_MAP_FAILURE,
 } from '../constants/actionTypes';
 
 const initialState = {
@@ -41,6 +50,27 @@ const admin = (state = initialState, action) => {
       };
     case MAP_CONNECT_REQUEST:
       return {
+        ...action,
+      };
+    case WORLD_MAP_REQUEST:
+    case WORLD_MAP_SUCCESS:
+    case WORLD_MAP_FAILURE:
+      return {
+        ...state,
+        ...action,
+      };
+    case PLANT_MAP_REQUEST:
+    case PLANT_MAP_SUCCESS:
+    case PLANT_MAP_FAILURE:
+      return {
+        ...state,
+        ...action,
+      };
+    case FACTORY_MAP_REQUEST:
+    case FACTORY_MAP_SUCCESS:
+    case FACTORY_MAP_FAILURE:
+      return {
+        ...state,
         ...action,
       };
     case ADMIN_REAL_TIME_REQUEST:

@@ -13,8 +13,7 @@ import { browserHistory } from 'react-router';
 import PropTypes from 'prop-types';
 
 /* eslint-disable import/extensions */
-import MapJson from '../../../constants/plants.geo.json';
-import { doRequestMapConnect } from '../../../actions/index';
+import { doRequestMapConnect, doRequestForPlantMap } from '../../../actions/index';
 import styleJson from '../../../constants/stylesConfig.json';
 /* eslint-enable import/extensions */
 
@@ -49,29 +48,33 @@ class PlantMapContainer extends Component {
   }
   componentWillMount() {
     /* eslint-disable no-shadow */
-    const { doRequestMapConnect } = this.props;
+    const { doRequestMapConnect, doRequestForPlantMap } = this.props;
     /* eslint-enable no-shadow */
     const plantName = this.props.params.plant;
+    const factoryName = this.props.params.factory;
+
     doRequestMapConnect({ plant: plantName });
+    doRequestForPlantMap({ plant: plantName, factory: factoryName });
   }
   componentWillReceiveProps(nextProps) {
-    if (nextProps.connectStatus === this.props.connectStatus) return;
-    this.showMap(nextProps.connectStatus);
+    // if (nextProps.connectStatus === this.props.connectStatus) return;
+    // if (nextProps.plantMapData === this.props.plantMapData) return;
+    if (nextProps.connectStatus && nextProps.plantMapData)
+      this.showMap(nextProps.connectStatus, nextProps.plantMapData);
   }
-  showMap(statusArrs) {
-    if (!statusArrs) return;
-
-
-    const factoryName = this.props.params.factory;
-    const plantName = this.props.params.plant;
+  showMap(statusArrs, plantMapData) {
+    if (!statusArrs || !plantMapData) return;
 
     const Stat = G2.Stat;
+
+    const plantName = this.props.params.plant;
+    const factoryName = this.props.params.factory;
 
     const borderWallMap = [];
     const activeLineMap = [];
     const inactiveLineMap = [];
     const disconnectLinMap = [];
-    const mapData = MapJson[factoryName][plantName];
+    const mapData = plantMapData;
     const features = mapData.features;
     for (let i = 0; i < features.length; i += 1) {
       const name = features[i].properties.name;
@@ -230,11 +233,11 @@ class PlantMapContainer extends Component {
     plantMapChart.render();
   }
   render() {
-    const { type } = this.props;
+    const { connectStatus, plantMapData } = this.props;
     return (
       <div id="plant-map-container">
         <Row className="row" type="flex" justify="center" align="middle">
-          { type === 'MAP_CONNECT_REQUEST'
+          { connectStatus === undefined || plantMapData === undefined
             ?
               <div id="plant-map-chart" style={{ width: '100%', textAlign: 'center' }}>
                 <Row type="flex" justify="space-around" align="middle" style={{ width: '100%', height: '100vh' }}>
@@ -252,6 +255,7 @@ class PlantMapContainer extends Component {
 PlantMapContainer.propTypes = {
   params: PropTypes.object,
   doRequestMapConnect: PropTypes.func,
+  doRequestForPlantMap: PropTypes.func,
   connectStatus: PropTypes.array,
   type: PropTypes.string,
 };
@@ -266,5 +270,6 @@ export default connect(
   mapStateToProps,
   {
     doRequestMapConnect,
+    doRequestForPlantMap,
   },
 )(PlantMapContainer);

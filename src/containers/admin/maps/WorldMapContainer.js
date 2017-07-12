@@ -1,9 +1,12 @@
 import React, { Component } from 'react';
 import G2 from 'g2';
 import { browserHistory } from 'react-router';
+import { connect } from 'react-redux';
+import { Spin } from 'antd';
+
+import { doRequestForWorldMap } from './../../../actions';
 
 /* eslint-disable import/extensions */
-import MapJson from '../../../constants/countries.geo.json';
 import styleJson from '../../../constants/stylesConfig.json';
 /* eslint-enable import/extensions */
 
@@ -15,10 +18,27 @@ const worldMapStrokeWidth = worldMap.strokeWidth;
 const highlightCountryColor = worldMap.highlightColor;
 
 class WorldMapContainer extends Component {
-  componentDidMount() {
-    this.showMap();
+  constructor(props) {
+    super(props);
+    this.state = {
+      isSpin: true
+    }
   }
-  showMap() {
+  componentDidMount() {
+    const { doRequestForWorldMap } = this.props;
+    doRequestForWorldMap();
+  }
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.worldMapData === this.props.worldMapData) return;
+    if (nextProps.worldMapData.length !== 0) {
+      this.setState({ isSpin: false });
+      this.showMap(nextProps.worldMapData);
+    } else {
+      this.setState({ isSpin: true });
+    }
+
+  }
+  showMap(worldMapData) {
     const Frame = G2.Frame;
     const Stat = G2.Stat;
 
@@ -32,7 +52,7 @@ class WorldMapContainer extends Component {
     });
 
     const map = [];
-    const mapData = MapJson;
+    const mapData = worldMapData;
     const features = mapData.features;
     for (let i = 0; i < features.length; i += 1) {
       const name = features[i].properties.name;
@@ -101,12 +121,29 @@ class WorldMapContainer extends Component {
     });
   }
   render() {
+    console.log(this.state);
     return (
       <div id="world-map-container">
+        { this.state.isSpin
+          ? <div>
+            <div className="emptyDiv" />
+            <Spin size="large" />
+            </div>
+          : null
+        }
         <div id="world-map-chart" style={{ width: '100%' }} />
       </div>
     );
   }
 }
 
-export default WorldMapContainer;
+const mapStateToProps = (state) => {
+  return {
+    ...state.admin,
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  { doRequestForWorldMap },
+)(WorldMapContainer);

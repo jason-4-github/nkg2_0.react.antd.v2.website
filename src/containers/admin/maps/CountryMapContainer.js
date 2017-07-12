@@ -2,9 +2,11 @@ import React, { Component } from 'react';
 import G2 from 'g2';
 import { browserHistory } from 'react-router';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+
+import { doRequestForWorldMap } from './../../../actions';
 
 /* eslint-disable import/extensions */
-import MapJson from '../../../constants/countries.geo.json';
 import styleJson from '../../../constants/stylesConfig.json';
 /* eslint-enable import/extensions */
 
@@ -34,16 +36,28 @@ const factoryLocations = [
 ];
 
 class CountryMapContainer extends Component {
-  componentDidMount() {
-    this.showMap();
+ componentDidMount() {
+    const { doRequestForWorldMap } = this.props;
+    doRequestForWorldMap();
   }
-  showMap() {
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.worldMapData === this.props.worldMapData) return;
+    if (nextProps.worldMapData.length !== 0) {
+      this.setState({ isSpin: false });
+      this.showMap(nextProps.worldMapData);
+    } else {
+      this.setState({ isSpin: true });
+    }
+
+  }
+  showMap(worldMapData) {
+    console.log('cccc', this.props.children);
     const countryName = this.props.params.country;
 
     const Stat = G2.Stat;
 
     const map = [];
-    const mapData = MapJson;
+    const mapData = worldMapData;
     const features = mapData.features;
     for (let i = 0; i < features.length; i += 1) {
       const name = features[i].properties.name;
@@ -139,4 +153,13 @@ CountryMapContainer.propTypes = {
   location: PropTypes.object,
 };
 
-export default CountryMapContainer;
+const mapStateToProps = (state) => {
+  return {
+    ...state.admin,
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  { doRequestForWorldMap },
+)(CountryMapContainer);

@@ -8,6 +8,7 @@ import * as types from '../constants/actionTypes';
 const serverConfig = {
   url: 'http://172.21.37.5:5001/apis',
   // url: 'http://127.0.0.1:5001/apis',
+  getMapUrl: 'http://192.168.1.129:5001/apis',
 };
 
 function checkStatus(response) {
@@ -350,6 +351,84 @@ export const doRequestAlarmTable = (passProps) => {
         dispatch({
           type: types.ADMIN_ALARM_TABLE_FAILURE,
           alarmChartData: [],
+        });
+      });
+  };
+};
+
+// get world map from api
+export const doRequestForWorldMap = (passProps) => {
+  return (dispatch) => {
+    dispatch({
+      type: types.WORLD_MAP_REQUEST,
+      worldMapData: [],
+    });
+    fetch(`${serverConfig.getMapUrl}/globalCountries`)
+      .then(checkStatus)
+      .then(parseJSON)
+      .then((data) => {
+        dispatch({
+          type: types.WORLD_MAP_SUCCESS,
+          worldMapData: data,
+        });
+      })
+      .catch(() => {
+        dispatch({
+          type: types.WORLD_MAP_FAILURE,
+          worldMapData: [],
+        });
+      });
+  };
+};
+
+// get factory map from api
+export const doRequestForFactoryMap = (passProps) => {
+  const factory = passProps.factory;
+  return (dispatch) => {
+    dispatch({
+      type: types.FACTORY_MAP_REQUEST,
+      factoryMapData: {},
+    });
+    fetch(`${serverConfig.getMapUrl}/factories?factory=${factory}`)
+      .then(checkStatus)
+      .then(parseJSON)
+      .then((data) => {
+        dispatch({
+          type: types.FACTORY_MAP_SUCCESS,
+          factoryMapData: data,
+        });
+      })
+      .catch(() => {
+        dispatch({
+          type: types.FACTORY_MAP_FAILURE,
+          factoryMapData: {},
+        });
+      });
+  };
+};
+
+// get plants map from api
+export const doRequestForPlantMap = (passProps) => {
+  const factory = passProps.factory;
+  const plant = passProps.plant;
+  return (dispatch) => {
+    dispatch({
+      type: types.PLANT_MAP_REQUEST,
+      plantMapData: {},
+    });
+    fetch(`${serverConfig.getMapUrl}/plants?factory=${factory}&?plant=${plant}`)
+      .then(checkStatus)
+      .then(parseJSON)
+      .then((data) => {
+        dispatch({
+          type: types.PLANT_MAP_SUCCESS,
+          plantMapData: data,
+        });
+      })
+      .catch(() => {
+        dispatch({
+          type: types.PLANT_MAP_FAILURE,
+          plantMapData: {},
         });
       });
   };

@@ -3,9 +3,11 @@ import G2 from 'g2';
 import { Row } from 'antd';
 import { browserHistory } from 'react-router';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+
+import { doRequestForFactoryMap } from './../../../actions';
 
 /* eslint-disable import/extensions */
-import MapJson from '../../../constants/factories.geo.json';
 import styleJson from '../../../constants/stylesConfig.json';
 /* eslint-enable import/extensions */
 
@@ -27,10 +29,27 @@ const inactivePlantLabelColor = inactivePlant.labelColor;
 const inactivePlantStrokeWidth = inactivePlant.strokeWidth;
 
 class FactoryMapContainer extends Component {
-  componentDidMount() {
-    this.showMap();
+  constructor(props) {
+    super(props);
+    this.state = {
+      isSpin: true
+    }
   }
-  showMap() {
+  componentDidMount() {
+    const { doRequestForFactoryMap } = this.props;
+    const factoryName = this.props.params.factory;
+    doRequestForFactoryMap({ factory: factoryName });
+  }
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.factoryMapData === this.props.factoryMapData) return;
+    if (Object.keys(nextProps.factoryMapData).length !== 0) {
+      this.setState({ isSpin: false, imageUrl: nextProps.factoryMapData.imagesUrl });
+      this.showMap(nextProps.factoryMapData);
+    } else {
+      this.setState({ isSpin: true });
+    }
+  }
+  showMap(factoryMapData) {
     const factoryName = this.props.params.factory;
 
     const Stat = G2.Stat;
@@ -38,7 +57,7 @@ class FactoryMapContainer extends Component {
     const borderWallMap = [];
     const activePlantMap = [];
     const inactivePlantMap = [];
-    const mapData = MapJson[factoryName];
+    const mapData = factoryMapData[factoryName];
     const features = mapData.features;
     for (let i = 0; i < features.length; i += 1) {
       const name = features[i].properties.name;
@@ -158,9 +177,11 @@ class FactoryMapContainer extends Component {
     const emptyDivHeight = (window.innerHeight < factoryBackgroundImageHeight)
       ? 0
       : ((window.innerHeight) - factoryBackgroundImageHeight) / 2;
+      console.log(444, this.state);
+    const { imageUrl } = this.state;
     return (
       <div id="factory-map-container">
-        <div className="factory-map-image">
+        <div className="factory-map-image" style={{ backgroundImage: `url(http://192.168.1.129:5001${imageUrl})` }}>
           <div style={{ height: emptyDivHeight }} />
           <Row className="row" type="flex" justify="center" align="middle">
             <div className="factory-map-mask" style={{ width: '100%' }} />
@@ -177,4 +198,13 @@ FactoryMapContainer.propTypes = {
   location: PropTypes.object,
 };
 
-export default FactoryMapContainer;
+const mapStateToProps = (state) => {
+  return {
+    ...state.admin,
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  { doRequestForFactoryMap },
+)(FactoryMapContainer);
