@@ -8,7 +8,6 @@ import * as types from '../constants/actionTypes';
 const serverConfig = {
   url: 'http://172.21.37.5:5001/apis',
   // url: 'http://127.0.0.1:5001/apis',
-  getMapUrl: 'http://192.168.1.129:5001/apis',
 };
 
 function checkStatus(response) {
@@ -363,7 +362,7 @@ export const doRequestForWorldMap = (passProps) => {
       type: types.WORLD_MAP_REQUEST,
       worldMapData: [],
     });
-    fetch(`${serverConfig.getMapUrl}/globalCountries`)
+    fetch(`${serverConfig.url}/globalCountries`)
       .then(checkStatus)
       .then(parseJSON)
       .then((data) => {
@@ -389,7 +388,7 @@ export const doRequestForFactoryMap = (passProps) => {
       type: types.FACTORY_MAP_REQUEST,
       factoryMapData: {},
     });
-    fetch(`${serverConfig.getMapUrl}/factories?factory=${factory}`)
+    fetch(`${serverConfig.url}/factories?factory=${factory}`)
       .then(checkStatus)
       .then(parseJSON)
       .then((data) => {
@@ -416,7 +415,7 @@ export const doRequestForPlantMap = (passProps) => {
       type: types.PLANT_MAP_REQUEST,
       plantMapData: {},
     });
-    fetch(`${serverConfig.getMapUrl}/plants?factory=${factory}&?plant=${plant}`)
+    fetch(`${serverConfig.url}/plants?factory=${factory}&?plant=${plant}`)
       .then(checkStatus)
       .then(parseJSON)
       .then((data) => {
