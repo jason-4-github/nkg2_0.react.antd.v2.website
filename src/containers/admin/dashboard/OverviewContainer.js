@@ -5,42 +5,13 @@ import _ from 'lodash';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 
+import { overviewColumns, overviewInformationTableColumns } from './../../../constants/tableColumns';
 import {
   doRequestRealTime,
   doRequestOverviewInformation,
   doRequestOverviewAlarmInfo,
 } from '../../../actions';
 import { wdRealTimePosition, seagateRealTimePositioin } from '../../../utils/realTimePosition';
-
-const columns = [
-  {
-    title: 'No',
-    dataIndex: 'no',
-    key: 'no',
-  }, {
-    title: 'Machine Name',
-    dataIndex: 'machineName',
-    key: 'machineName',
-  }, {
-    title: 'Error Code',
-    dataIndex: 'errorCode',
-    key: 'errorCode',
-  }, {
-    title: 'Error Description',
-    dataIndex: 'errorDescription',
-    key: 'errorDescription',
-  },
-];
-
-const informationTableColumns = [
-  {
-    title: 'Name',
-    dataIndex: 'name',
-  }, {
-    title: 'Value',
-    dataIndex: 'value',
-  },
-];
 
 class OverviewContainer extends Component {
   componentDidMount() {
@@ -96,7 +67,7 @@ class OverviewContainer extends Component {
     return (
       <div>
         <Table
-          columns={informationTableColumns}
+          columns={overviewInformationTableColumns}
           dataSource={informationTableData}
           size="small"
           showHeader={false}
@@ -396,7 +367,7 @@ class OverviewContainer extends Component {
             <Card>
               <Table
                 dataSource={this.generateTableDataSource(overviewAlarmData)}
-                columns={columns}
+                columns={overviewColumns}
               />
             </Card>
           </Col>

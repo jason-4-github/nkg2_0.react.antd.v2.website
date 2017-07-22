@@ -7,6 +7,7 @@ import createG2 from 'g2-react';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 
+import { outputColumns } from './../../../constants/tableColumns';
 import {
   doRequestOutputTable,
 } from '../../../actions';
@@ -14,26 +15,6 @@ import {
 const { MonthPicker } = DatePicker;
 const RadioButton = Radio.Button;
 const RadioGroup = Radio.Group;
-
-const columns = [
-  {
-    title: 'No',
-    dataIndex: 'no',
-    key: 'no',
-  }, {
-    title: 'Date',
-    dataIndex: 'date',
-    key: 'date',
-  }, {
-    title: 'Output',
-    dataIndex: 'output',
-    key: 'output',
-  }, {
-    title: 'Yield Rate',
-    dataIndex: 'yieldRate',
-    key: 'yieldRate',
-  },
-];
 
 const dateFormat = 'YYYY-MM-DD';
 const monthFormat = 'YYYY-MM';
@@ -263,7 +244,7 @@ class OutputContainer extends Component {
             <Card>
               <Table
                 dataSource={this.generateTableDataSource(outputTableData)}
-                columns={columns}
+                columns={outputColumns}
               />
             </Card>
           </Col>

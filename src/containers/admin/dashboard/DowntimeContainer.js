@@ -7,6 +7,7 @@ import createG2 from 'g2-react';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 
+import { downtimeColumns } from './../../../constants/tableColumns';
 import {
   doRequestDowntimeTable,
 } from '../../../actions';
@@ -14,22 +15,6 @@ import {
 const { MonthPicker } = DatePicker;
 const RadioButton = Radio.Button;
 const RadioGroup = Radio.Group;
-
-const columns = [
-  {
-    title: 'No',
-    dataIndex: 'no',
-    key: 'no',
-  }, {
-    title: 'Machine Name',
-    dataIndex: 'machineName',
-    key: 'machineName',
-  }, {
-    title: 'Down Time',
-    dataIndex: 'downTime',
-    key: 'downTime',
-  },
-];
 
 const dateFormat = 'YYYY-MM-DD';
 const monthFormat = 'YYYY-MM';
@@ -222,7 +207,7 @@ class DowntimeContainer extends Component {
             <Card>
               <Table
                 dataSource={this.generateTableDataSource(downtimeTableData)}
-                columns={columns}
+                columns={downtimeColumns}
               />
             </Card>
           </Col>

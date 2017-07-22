@@ -7,6 +7,7 @@ import createG2 from 'g2-react';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 
+import { alarmColumns } from './../../../constants/tableColumns';
 import {
   doRequestAlarmTable,
 } from '../../../actions';
@@ -14,42 +15,6 @@ import {
 const { MonthPicker } = DatePicker;
 const RadioButton = Radio.Button;
 const RadioGroup = Radio.Group;
-
-const columns = [
-  {
-    title: 'No',
-    dataIndex: 'no',
-    key: 'no',
-  }, {
-    title: 'Machine Name',
-    dataIndex: 'machineName',
-    key: 'machineName',
-  }, {
-    title: 'Alarm Code',
-    dataIndex: 'alarmCode',
-    key: 'alarmCode',
-  }, {
-    title: 'Alarm Description',
-    dataIndex: 'alarmDescription',
-    key: 'alarmDescription',
-  }, {
-    title: 'Count',
-    dataIndex: 'count',
-    key: 'count',
-  }, {
-    title: 'Alarm Time',
-    dataIndex: 'alarmTime',
-    key: 'alarmTime',
-  }, {
-    title: 'Idle Time',
-    dataIndex: 'idleTime',
-    key: 'idleTime',
-  }, {
-    title: 'Alarm Total Time',
-    dataIndex: 'alarmTotalTime',
-    key: 'alarmTotalTime',
-  },
-];
 
 const dateFormat = 'YYYY-MM-DD';
 const monthFormat = 'YYYY-MM';
@@ -238,7 +203,7 @@ class AlarmContainer extends Component {
             <Card>
               <Table
                 dataSource={this.generateTableDataSource(alarmChartData)}
-                columns={columns}
+                columns={alarmColumns}
               />
             </Card>
           </Col>

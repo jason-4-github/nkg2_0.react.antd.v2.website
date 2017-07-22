@@ -40,6 +40,7 @@ class CountryMapContainer extends Component {
     const { doRequestForWorldMap } = this.props;
     doRequestForWorldMap();
   }
+  // XXX(JasonHsu): need to fix greater, like use props in router
   componentWillReceiveProps(nextProps) {
     if (nextProps.worldMapData === this.props.worldMapData) return;
     if (nextProps.worldMapData.length !== 0) {

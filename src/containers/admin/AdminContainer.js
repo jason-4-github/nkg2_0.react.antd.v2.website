@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Layout, Menu, Icon, Tabs, Breadcrumb } from 'antd';
 import io from 'socket.io-client';
 import PropTypes from 'prop-types';
+import _ from 'lodash';
 
 import OverviewContainer from './dashboard/OverviewContainer';
 import SummaryContainer from './dashboard/SummaryContainer';
@@ -11,6 +12,25 @@ import AlarmContainer from './dashboard/AlarmContainer';
 
 const { Header, Sider, Content } = Layout;
 const { TabPane } = Tabs;
+
+const showSideMenu = (sideMenuParams) => {
+  const childArrs = [];
+
+  _.map(sideMenuParams, (value, key) => {
+    childArrs.push(
+      <Menu.Item key={key}>
+        <Icon type="appstore-o" />
+        <span className="nav-text">{value}</span>
+      </Menu.Item>
+    );
+  });
+
+  return (
+    <Menu theme="dark" mode="inline" defaultSelectedKeys={['0']}>
+      {childArrs}
+    </Menu>
+  );
+};
 
 class AdminContainer extends Component {
   constructor(props) {
@@ -43,7 +63,6 @@ class AdminContainer extends Component {
     if (key !== '1' && key !== '2') {
       this.state.socket.emit('endToSendData');
     } else {
-      console.log('xxxx');
       this.state.socket.emit('startToSendData');
     }
   }
@@ -52,6 +71,9 @@ class AdminContainer extends Component {
     const factory = this.props.params.factory;
     const plant = this.props.params.plant;
     const line = this.props.params.line;
+
+    const sideMenuParams = [line, 'ICT', 'FCT', 'Buffer CV', 'Transfer CV',
+      'ICT CV', 'FCT CV', 'Transfer Robot', 'Cleaner', 'TIM', 'DMC'];
     return (
       <div id="admin-container">
         <Layout>
@@ -61,56 +83,11 @@ class AdminContainer extends Component {
             collapsed={this.state.collapsed}
           >
             <div className="logo" />
-            <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
-              <Menu.Item key="1">
-                <Icon type="user" />
-                <span className="nav-text">{`${this.props.params.line} Line`}</span>
-              </Menu.Item>
-              <Menu.Item key="2">
-                <Icon type="video-camera" />
-                <span className="nav-text">ICT</span>
-              </Menu.Item>
-              <Menu.Item key="3">
-                <Icon type="upload" />
-                <span className="nav-text">FCT</span>
-              </Menu.Item>
-              <Menu.Item key="4">
-                <Icon type="user" />
-                <span className="nav-text">Buffer CV</span>
-              </Menu.Item>
-              <Menu.Item key="5">
-                <Icon type="video-camera" />
-                <span className="nav-text">Transfer CV</span>
-              </Menu.Item>
-              <Menu.Item key="6">
-                <Icon type="upload" />
-                <span className="nav-text">ICT CV</span>
-              </Menu.Item>
-              <Menu.Item key="7">
-                <Icon type="user" />
-                <span className="nav-text">FCT CV</span>
-              </Menu.Item>
-              <Menu.Item key="8">
-                <Icon type="video-camera" />
-                <span className="nav-text">Transfer Robot</span>
-              </Menu.Item>
-              <Menu.Item key="9">
-                <Icon type="upload" />
-                <span className="nav-text">Cleaner</span>
-              </Menu.Item>
-              <Menu.Item key="10">
-                <Icon type="user" />
-                <span className="nav-text">TIM</span>
-              </Menu.Item>
-              <Menu.Item key="11">
-                <Icon type="video-camera" />
-                <span className="nav-text">DMC</span>
-              </Menu.Item>
-            </Menu>
+            { showSideMenu(sideMenuParams) }
           </Sider>
           <Layout>
             <Header className="header">
-              <Icon
+               <Icon
                 className="trigger"
                 type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}
                 onClick={this.toggle}

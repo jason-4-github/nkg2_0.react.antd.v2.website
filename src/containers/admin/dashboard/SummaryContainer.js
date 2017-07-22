@@ -5,57 +5,12 @@ import _ from 'lodash';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 
+import { summaryColumns, summarySmallTableColumns } from './../../../constants/tableColumns';
 import {
   doRequestSummaryInformation,
   doRequestSummaryTable,
 } from '../../../actions';
 import { wdRealTimePosition, seagateRealTimePositioin } from '../../../utils/realTimePosition';
-
-const columns = [
-  {
-    title: 'Machine Name',
-    dataIndex: 'machineName',
-    key: 'machineName',
-  }, {
-    title: 'Running Time',
-    dataIndex: 'runningTime',
-    key: 'runningTime',
-  }, {
-    title: 'Idle Time',
-    dataIndex: 'idleTime',
-    key: 'idleTime',
-  }, {
-    title: 'Alarm Time',
-    dataIndex: 'alarmTime',
-    key: 'alarmTime',
-  }, {
-    title: 'Record Time',
-    dataIndex: 'recordTime',
-    key: 'recordTime',
-  }, {
-    title: 'Input Count',
-    dataIndex: 'inputCount',
-    key: 'inputCount',
-  }, {
-    title: 'Output OK Count',
-    dataIndex: 'outputOkCount',
-    key: 'outputOkCount',
-  }, {
-    title: 'Output NG Count',
-    dataIndex: 'outputNgCount',
-    key: 'outputNgCount',
-  },
-];
-
-const smallTableColumns = [
-  {
-    title: 'Name',
-    dataIndex: 'name',
-  }, {
-    title: 'Value',
-    dataIndex: 'value',
-  },
-];
 
 class SummaryContainer extends Component {
   componentDidMount() {
@@ -112,7 +67,7 @@ class SummaryContainer extends Component {
     return (
       <div>
         <Table
-          columns={smallTableColumns}
+          columns={summarySmallTableColumns}
           dataSource={productTableData}
           size="small"
           showHeader={false}
@@ -159,7 +114,7 @@ class SummaryContainer extends Component {
     return (
       <div>
         <Table
-          columns={smallTableColumns}
+          columns={summarySmallTableColumns}
           dataSource={informationTableData}
           size="small"
           showHeader={false}
@@ -475,7 +430,7 @@ class SummaryContainer extends Component {
             <Card>
               <Table
                 dataSource={this.generateTableDataSource(summaryTableData)}
-                columns={columns}
+                columns={summaryColumns}
               />
             </Card>
           </Col>
