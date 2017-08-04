@@ -6,8 +6,8 @@ import * as types from '../constants/actionTypes';
 
 // TODO(S.C.) => url need to be changed as production
 const serverConfig = {
-  url: 'http://172.21.37.5:5001/apis',
-  // url: 'http://127.0.0.1:5001/apis',
+  // url: 'http://172.21.37.5:5001/apis',
+  url: 'http://127.0.0.1:5001/apis',
 };
 
 function checkStatus(response) {

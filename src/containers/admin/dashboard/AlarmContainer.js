@@ -177,25 +177,24 @@ class AlarmContainer extends Component {
       <div id="alarm-container">
         <Row>
           <Col span={24} className="col">
-            <Card title="Information">
-              <RadioGroup defaultValue="date" onChange={this.onFilterChange}>
-                <RadioButton value="date">Date</RadioButton>
-                <RadioButton value="week">Week</RadioButton>
-                <RadioButton value="month">Month</RadioButton>
-              </RadioGroup>
-              { this.renderPicker() }
-              <Button
-                type="primary"
-                shape="circle"
-                icon="search"
-                className="info-margin"
-                onClick={this.doSearch}
-                disabled={this.state.isSearchButtonDisable}
-              />
-            </Card>
-          </Col>
-          <Col span={24} className="col">
-            <Card title="Alarm Information">
+            <Card title={
+              <div style={{ textAlign: 'right' }}>
+                <RadioGroup defaultValue="date" onChange={this.onFilterChange}>
+                  <RadioButton value="date">Date</RadioButton>
+                  <RadioButton value="week">Week</RadioButton>
+                  <RadioButton value="month">Month</RadioButton>
+                </RadioGroup>
+                { this.renderPicker() }
+                <Button
+                  type="primary"
+                  shape="circle"
+                  icon="search"
+                  className="info-margin"
+                  onClick={this.doSearch}
+                  disabled={this.state.isSearchButtonDisable}
+                />
+              </div>
+            }>
               { this.generateChart(alarmChartData) }
             </Card>
           </Col>

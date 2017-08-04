@@ -10,6 +10,8 @@ import OutputContainer from './dashboard/OutputContainer';
 import DowntimeContainer from './dashboard/DowntimeContainer';
 import AlarmContainer from './dashboard/AlarmContainer';
 
+import background from './../../styles/body.jpg';
+
 const { Header, Sider, Content } = Layout;
 const { TabPane } = Tabs;
 
@@ -92,14 +94,14 @@ class AdminContainer extends Component {
                 type={this.state.collapsed ? 'menu-unfold' : 'menu-fold'}
                 onClick={this.toggle}
               />
-              <Breadcrumb>
-                <Breadcrumb.Item><a href={`/select-map/${country}`}>{country}</a></Breadcrumb.Item>
-                <Breadcrumb.Item><a href={`/select-map/Thailand/${factory}`}>{factory}</a></Breadcrumb.Item>
-                <Breadcrumb.Item><a href={`/select-map/Thailand/Mahachai/${plant}`}>{plant}</a></Breadcrumb.Item>
-                <Breadcrumb.Item>{line}</Breadcrumb.Item>
+              <Breadcrumb className="barItems">
+                <Breadcrumb.Item><a href={`/select-map/${country}`} className="barItems">{country}</a></Breadcrumb.Item>
+                <Breadcrumb.Item><a href={`/select-map/Thailand/${factory}`} className="barItems">{factory}</a></Breadcrumb.Item>
+                <Breadcrumb.Item><a href={`/select-map/Thailand/Mahachai/${plant}`} className="barItems">{plant}</a></Breadcrumb.Item>
+                <Breadcrumb.Item className="barItems">{line}</Breadcrumb.Item>
               </Breadcrumb>
             </Header>
-            <Content className="content">
+            <Content className="content" style={{ backgroundImage: `url(${background})`}}>
               <Tabs defaultActiveKey="1" onChange={this.tabsCallback}>
                 <TabPane tab="Overview" key="1">
                   <OverviewContainer {...this.props} socketData={this.state.socketData} />

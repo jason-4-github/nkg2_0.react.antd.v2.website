@@ -1,9 +1,15 @@
 #admin-container {
   .header {
-    background: #fff;
+    background: #2b2b2b;
     padding: 0;
     flex-direction: row;
     display: inline-flex;
+    .barItems {
+      color: rgba(255, 255, 255, 0.65);
+      .ant-breadcrumb-separator {
+        color: rgba(255, 255, 255, 0.65);
+      }
+    }
   }
   .content {
     margin: 24px 16px;
@@ -21,6 +27,7 @@
     padding: 0 16px;
     cursor: pointer;
     transition: color .3s;
+    color: #fff;
   }
   .trigger:hover {
     color: #108ee9;

@@ -179,27 +179,26 @@ class DowntimeContainer extends Component {
     return (
       <div id="downtime-container">
         <Row>
-          <Col span={24} className="col">
-            <Card title="Down Time History">
-              <RadioGroup defaultValue="date" onChange={this.onFilterChange}>
-                <RadioButton value="date">Date</RadioButton>
-                <RadioButton value="week">Week</RadioButton>
-                <RadioButton value="month">Month</RadioButton>
-                <RadioButton value="year">Year</RadioButton>
-              </RadioGroup>
-              { this.renderPicker() }
-              <Button
-                type="primary"
-                shape="circle"
-                icon="search"
-                className="info-margin"
-                onClick={this.doSearch}
-                disabled={this.state.isSearchButtonDisable}
-              />
-            </Card>
-          </Col>
           <Col span={14} className="col">
-            <Card title="Down Time Tricking">
+            <Card title={
+              <div>
+                <RadioGroup defaultValue="date" onChange={this.onFilterChange}>
+                  <RadioButton value="date">Date</RadioButton>
+                  <RadioButton value="week">Week</RadioButton>
+                  <RadioButton value="month">Month</RadioButton>
+                  <RadioButton value="year">Year</RadioButton>
+                </RadioGroup>
+                { this.renderPicker() }
+                <Button
+                  type="primary"
+                  shape="circle"
+                  icon="search"
+                  className="info-margin"
+                  onClick={this.doSearch}
+                  disabled={this.state.isSearchButtonDisable}
+                />
+              </div>
+            }>
               { this.generateChart(downtimeTableData) }
             </Card>
           </Col>

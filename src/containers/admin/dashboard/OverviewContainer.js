@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import { Row, Col, Card, Spin, Table } from 'antd';
+import { Row, Col, Card, Spin, Table, Icon } from 'antd';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 
-import { overviewColumns, overviewInformationTableColumns } from './../../../constants/tableColumns';
+import { overviewColumns } from './../../../constants/tableColumns';
 import {
   doRequestRealTime,
   doRequestOverviewInformation,
@@ -39,40 +39,55 @@ class OverviewContainer extends Component {
     const line = this.props.params.line;
     let connectStatus;
     if (!isConnect && overviewInformationData) {
-      connectStatus = 'device disconnect';
+      connectStatus = <Icon type="close-circle-o" style={{ color: 'white' }} />;
     } else if (!isConnect) {
       connectStatus = 'offline';
     } else {
-      connectStatus = 'online';
+      connectStatus = <Icon type="check-circle-o" />;
     }
-    const informationTableData = [
-      {
-        key: '1',
-        name: 'Line Name',
-        value: line,
-      }, {
-        key: '2',
-        name: 'Connection',
-        value: connectStatus,
-      }, {
-        key: '3',
-        name: 'Time',
-        value: moment().format('YYYY-MM-DD hh:mm:ss'),
-      }, {
-        key: '4',
-        name: 'Actual Output',
-        value: isConnect ? data.OutputOKCount : 'not connect',
-      },
-    ];
+
+    // information config set up
+    const informationTableData = [];
+    const outputOKCount = isConnect
+      ? data.OutputOKCount
+      : <Icon type="close-circle-o" style={{ color: 'white' }} />;
+    const time = [moment().format('YYYY-MM-DD hh:mm:ss')];
+    const informationTitle = ['Line Name', 'Connection', 'Time', 'Output'];
+    const informationIcon = ['idcard', 'share-alt', 'clock-circle-o', 'exception'];
+    const informationContent = [line, connectStatus, time, outputOKCount];
+    const informationCardColors = ['#3598dc', '#e7505a', '#32c5d2', '#8E44AD'];
+
+    // _.map(informationTitle, (value, key) => {
+    //   informationTableData.push(
+    //     <Col span={6} className="col" key={value}>
+    //       <Card className="smallCard">
+    //         <Col span={10} className="col" id={'informationCol' + (key + 1)}>
+    //           <Icon type={informationIcon[key]} className="overviewIcon" />
+    //         </Col>
+    //         <Col span={14} className="col">
+    //           <b style={{ fontSize: value === 'Time' ? '15px' : '30px' }}>{informationContent[key]}</b>
+    //           <br />
+    //           {value}
+    //         </Col>
+    //       </Card>
+    //     </Col>
+    //   );
+    // });
+    _.map(informationTitle, (value, key) => {
+      informationTableData.push(
+        <Col span={6} className="col smallCard" key={value}>
+          <div className="informationCardDiv" style={{ backgroundColor: informationCardColors[key] }}>
+            <Icon type={informationIcon[key]} className="overviewIcon" />
+            <b className="informationWords" style={{ fontSize: value === 'Time' ? '20px' : '30px' }}>{informationContent[key]}</b>
+            <br />
+            <h3 className="informationTitleName">{value}</h3>
+          </div>
+        </Col>
+      );
+    });
     return (
       <div>
-        <Table
-          columns={overviewInformationTableColumns}
-          dataSource={informationTableData}
-          size="small"
-          showHeader={false}
-          pagination={false}
-        />
+        {informationTableData}
       </div>
     );
   }
@@ -339,14 +354,7 @@ class OverviewContainer extends Component {
     return (
       <div id="overview-container">
         <Row>
-          <Col span={12} className="col">
-            <Card title="Information">
-              {this.displayInformationData(overviewInformationData, type)}
-            </Card>
-          </Col>
-          <Col span={12} className="col">
-            <Card title="Manpower" />
-          </Col>
+          {this.displayInformationData(overviewInformationData, type)}
           <Col span={24} className="col">
             <Card>
               {this.displayRealTimeImage(socketData)}

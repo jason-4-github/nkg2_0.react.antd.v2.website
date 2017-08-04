@@ -217,26 +217,27 @@ class OutputContainer extends Component {
       <div id="output-container">
         <Row>
           <Col span={24} className="col">
-            <Card title="Output History">
-              <RadioGroup defaultValue="date" onChange={this.onFilterChange}>
-                <RadioButton value="hour">Hour</RadioButton>
-                <RadioButton value="date">Date</RadioButton>
-                <RadioButton value="month">Month</RadioButton>
-                <RadioButton value="year">Year</RadioButton>
-              </RadioGroup>
-              { this.renderPicker() }
-              <Button
-                type="primary"
-                shape="circle"
-                icon="search"
-                className="info-margin"
-                onClick={this.doSearch}
-                disabled={this.state.isSearchButtonDisable}
-              />
-            </Card>
-          </Col>
-          <Col span={24} className="col">
-            <Card title="Yield Rate Trend Chart">
+            <Card
+              title={
+                <div style={{ textAlign: 'right' }}>
+                  <RadioGroup defaultValue="date" onChange={this.onFilterChange}>
+                    <RadioButton value="hour">Hour</RadioButton>
+                    <RadioButton value="date">Date</RadioButton>
+                    <RadioButton value="month">Month</RadioButton>
+                    <RadioButton value="year">Year</RadioButton>
+                  </RadioGroup>
+                  { this.renderPicker() }
+                  <Button
+                    type="primary"
+                    shape="circle"
+                    icon="search"
+                    className="info-margin"
+                    onClick={this.doSearch}
+                    disabled={this.state.isSearchButtonDisable}
+                  />
+                </div>
+              }
+            >
               { this.generateChart(outputTableData) }
             </Card>
           </Col>
