@@ -55,13 +55,6 @@ class SummaryContainer extends Component {
     const productContent2 = ['606', '707', '20', '70'];
     const productCardColors = ['#2ab4c0', '#f36a5a', '#5C9BD1', '#8877a9'];
 
-    productData.push(
-      <Col span={24} className="col" key="productName" id="productName">
-        <b >
-          {machine === 1 ? 'FCT Product' : 'ICT Product'}
-        </b>
-      </Col>
-    );
     _.map(productContent2, (value, key) => {
       productData.push(
         <Col span={6}
@@ -72,7 +65,7 @@ class SummaryContainer extends Component {
             <b className="cardData" style={{ color: productCardColors[key] }}>
               {key === productContent2.length - 1 ? value + '%' : value}
             </b>
-            <b className="backgroundWords">{value}</b>
+            <b className="backgroundWords">ICT</b>
             <h3>{productTitle[key]}</h3>
             <br />
             <hr className="hrLine" style={{ backgroundColor: productCardColors[key] }} />
