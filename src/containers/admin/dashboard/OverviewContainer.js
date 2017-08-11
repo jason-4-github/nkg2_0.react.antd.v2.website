@@ -7,9 +7,8 @@ import PropTypes from 'prop-types';
 
 import { overviewColumns } from './../../../constants/tableColumns';
 import {
-  doRequestRealTime,
-  doRequestOverviewInformation,
   doRequestOverviewAlarmInfo,
+  doRequestCount,
 } from '../../../actions';
 import { wdRealTimePosition, seagateRealTimePositioin } from '../../../utils/realTimePosition';
 
@@ -17,28 +16,42 @@ class OverviewContainer extends Component {
   componentDidMount() {
     /* eslint-disable no-shadow */
     const {
-      doRequestOverviewInformation,
       doRequestOverviewAlarmInfo,
+      doRequestCount,
     } = this.props;
     /* eslint-enable no-shadow */
+    const countryName = this.props.params.country;
+    const factoryName = this.props.params.factory;
+    const plantName = this.props.params.plant;
     const lineName = this.props.params.line;
-    doRequestOverviewInformation({ line: lineName });
+    // (XXX): need modify more common sense
+    const equipmentName = 'ict';
+    const timeZone = 'Asia/Bangkok';
+
     doRequestOverviewAlarmInfo({ line: lineName });
+    doRequestCount({
+      countryName,
+      factoryName,
+      plantName,
+      lineName,
+      equipmentName,
+      timeZone
+    });
   }
-  displayInformationData(overviewInformationData, type) {
+  displayInformationData(countData, type) {
     if (type === 'ADMIN_OVERVIEW_INFORMATION_REQUEST') {
       return (<div><Spin /></div>);
     }
     if (type === 'ADMIN_OVERVIEW_INFORMATION_FAILURE') {
       return (<div> Ooops... Something Wrong. </div>);
     }
-    if (!overviewInformationData) { return (<div><Spin /></div>); }
+    if (!countData) { return (<div><Spin /></div>); }
 
-    const isConnect = overviewInformationData.length !== 0;
-    const data = overviewInformationData[0];
+    const isConnect = countData.length !== 0;
+    const data = countData;
     const line = this.props.params.line;
     let connectStatus;
-    if (!isConnect && overviewInformationData) {
+    if (!isConnect && countData) {
       connectStatus = <Icon type="close-circle-o" style={{ color: 'white' }} />;
     } else if (!isConnect) {
       connectStatus = 'offline';
@@ -49,7 +62,7 @@ class OverviewContainer extends Component {
     // information config set up
     const informationTableData = [];
     const outputOKCount = isConnect
-      ? data.OutputOKCount
+      ? data.okQuantity
       : <Icon type="close-circle-o" style={{ color: 'white' }} />;
     const time = [moment().format('YYYY-MM-DD hh:mm:ss')];
     const informationTitle = ['Line Name', 'Connection', 'Time', 'Output'];
@@ -57,22 +70,6 @@ class OverviewContainer extends Component {
     const informationContent = [line, connectStatus, time, outputOKCount];
     const informationCardColors = ['#3598dc', '#e7505a', '#32c5d2', '#8E44AD'];
 
-    // _.map(informationTitle, (value, key) => {
-    //   informationTableData.push(
-    //     <Col span={6} className="col" key={value}>
-    //       <Card className="smallCard">
-    //         <Col span={10} className="col" id={'informationCol' + (key + 1)}>
-    //           <Icon type={informationIcon[key]} className="overviewIcon" />
-    //         </Col>
-    //         <Col span={14} className="col">
-    //           <b style={{ fontSize: value === 'Time' ? '15px' : '30px' }}>{informationContent[key]}</b>
-    //           <br />
-    //           {value}
-    //         </Col>
-    //       </Card>
-    //     </Col>
-    //   );
-    // });
     _.map(informationTitle, (value, key) => {
       informationTableData.push(
         <Col span={6} className="col smallCard" key={value}>
@@ -96,6 +93,7 @@ class OverviewContainer extends Component {
     // const { wdRealTimePosition, seagateRealTimePositioin } = this.props;
     // if (line === 'P4') return seagateRealTimePositioin([], line);
     if (line === 'CELL3') return wdRealTimePosition([], line);
+    if (line === 'P6') return seagateRealTimePositioin([], line);
     // if (typeof realTimeData === 'undefined') return '';
 
     const statusColors = ['white', 'yellow', 'green', 'red'];
@@ -348,13 +346,13 @@ class OverviewContainer extends Component {
     return arr;
   }
   render() {
-    const { type, overviewInformationData, overviewAlarmData, socketData } = this.props;
+    const { type, overviewAlarmData, socketData, countData } = this.props;
     const line = this.props.params.line;
     const noDataLines = ['P4', 'G7', 'G8', 'G9', 'CELL2', 'CELL3'];
     return (
       <div id="overview-container">
         <Row>
-          {this.displayInformationData(overviewInformationData, type)}
+          {this.displayInformationData(countData, type)}
           <Col span={24} className="col">
             <Card>
               {this.displayRealTimeImage(socketData)}
@@ -387,8 +385,8 @@ class OverviewContainer extends Component {
 
 OverviewContainer.propTypes = {
   params: PropTypes.object,
-  doRequestOverviewInformation: PropTypes.func,
   doRequestOverviewAlarmInfo: PropTypes.func,
+  doRequestCount: PropTypes.func,
   overviewInformationData: PropTypes.array,
   overviewAlarmData: PropTypes.array,
   type: PropTypes.string,
@@ -404,8 +402,7 @@ const mapStateToProps = (state) => {
 export default connect(
   mapStateToProps,
   {
-    doRequestOverviewInformation,
     doRequestOverviewAlarmInfo,
-    doRequestRealTime,
+    doRequestCount,
   },
 )(OverviewContainer);

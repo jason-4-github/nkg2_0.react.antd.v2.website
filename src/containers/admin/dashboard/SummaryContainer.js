@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Row, Col, Card, Spin, Table, Progress } from 'antd';
+import { Row, Col, Card, Spin, Table } from 'antd';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import moment from 'moment';
@@ -7,55 +7,54 @@ import PropTypes from 'prop-types';
 
 import { summaryColumns } from './../../../constants/tableColumns';
 import {
-  doRequestSummaryInformation,
   doRequestSummaryTable,
+  doRequestCount,
 } from '../../../actions';
 
 class SummaryContainer extends Component {
   componentDidMount() {
     /* eslint-disable no-shadow */
-    const { doRequestSummaryInformation, doRequestSummaryTable } = this.props;
+    const {
+      doRequestSummaryTable,
+      doRequestCount
+    } = this.props;
     /* eslint-enable no-shadow */
 
+    const countryName = this.props.params.country;
+    const factoryName = this.props.params.factory;
+    const plantName = this.props.params.plant;
     const lineName = this.props.params.line;
-    doRequestSummaryInformation({ line: lineName });
+    // (XXX): need modify more common sense
+    const equipmentName = 'ict';
+    const timeZone = 'Asia/Bangkok';
+
     doRequestSummaryTable({ line: lineName });
+    doRequestCount({
+      countryName,
+      factoryName,
+      plantName,
+      lineName,
+      equipmentName,
+      timeZone
+    });
   }
-  displayProductData(summaryInformationData, type, machine) {
-    // if (type === 'ADMIN_SUMMARY_INFORMATION_REQUEST') {
-    //   return (<div><Spin /></div>);
-    // }
+  displayProductData(countData, type) {
     if (type === 'ADMIN_SUMMARY_INFORMATION_FAILURE') {
       return (<div> Ooops... Something Wrong. </div>);
     }
+    if (!countData) { return (<div><Spin /></div>); }
+    const ictData = countData
 
-    // machine - 0: ict, 1: fct
-    if (!summaryInformationData) { return (<div><Spin /></div>); }
-    // const ictData = summaryInformationData[0];
-    // const fctData = machine === 1 ? summaryInformationData[1] : [];
-    // if (machine === 1) {
-    //   if (!ictData || !fctData) return (<div><Spin /></div>);
-    // } else if (machine === 0) {
-    //   if (!ictData) return (<div><Spin /></div>);
-    // }
-
-    // const ictYieldRate =
-    //   ((ictData.OutputOKCount / (ictData.OutputOKCount + ictData.OutputNGCount)) * 100).toFixed(1);
-    // const fctYieldRate =
-    //   ((fctData.OutputOKCount / (fctData.OutputOKCount + fctData.OutputNGCount)) * 100).toFixed(1);
+    const ictYieldRate =
+      ((ictData.okQuantity / (ictData.okQuantity + ictData.ngQuantity)) * 100).toFixed(1);
 
     const productData = [];
-    const productTitleData = [];
     const productTitle = ['Input', 'Output', 'NG Count', 'Yield Rate'];
-    // const productContent = [
-    //   machine === 0 ? ictData.InputCount : fctData.InputCount,
-    //   machine === 0 ? ictData.OutputOKCount : fctData.OutputOKCount,
-    //   machine === 0 ? ictData.OutputNGCount : fctData.OutputNGCount,
-    //   <Progress type="dashboard" width={100} percent={machine === 0 ? ictYieldRate : fctYieldRate} />];
-    const productContent2 = ['606', '707', '20', '70'];
+    const productContent = [ictData.okQuantity + ictData.ngQuantity, ictData.okQuantity,
+      ictData.ngQuantity, ictYieldRate];
     const productCardColors = ['#2ab4c0', '#f36a5a', '#5C9BD1', '#8877a9'];
 
-    _.map(productContent2, (value, key) => {
+    _.map(productContent, (value, key) => {
       productData.push(
         <Col span={6}
           className="col productCard"
@@ -63,7 +62,7 @@ class SummaryContainer extends Component {
         >
           <div className="cardBorder" style={{ borderColor: productCardColors[key] }}>
             <b className="cardData" style={{ color: productCardColors[key] }}>
-              {key === productContent2.length - 1 ? value + '%' : value}
+              {key === productContent.length - 1 ? value + '%' : value}
             </b>
             <b className="backgroundWords">ICT</b>
             <h3>{productTitle[key]}</h3>
@@ -76,7 +75,6 @@ class SummaryContainer extends Component {
 
     return (
       <Row>
-       {machine === 1 ? '' : productTitleData}
        {productData}
       </Row>
     );
@@ -101,13 +99,12 @@ class SummaryContainer extends Component {
     return arr;
   }
   render() {
-    const { type, summaryInformationData, summaryTableData } = this.props;
-    const line = this.props.params.line;
+    const { type, summaryTableData, countData } = this.props;
     return (
       <div id="summary-container">
         <Row>
           <Col span={24} className="col" id="ictCol">
-            {this.displayProductData(summaryInformationData, type, 0)}
+            {this.displayProductData(countData, type)}
           </Col>
           <Col span={24} className="col">
             <Card>
@@ -125,8 +122,8 @@ class SummaryContainer extends Component {
 
 SummaryContainer.propTypes = {
   params: PropTypes.object,
-  doRequestSummaryInformation: PropTypes.func,
   doRequestSummaryTable: PropTypes.func,
+  doRequestCount: PropTypes.func,
   summaryInformationData: PropTypes.array,
   summaryTableData: PropTypes.array,
   type: PropTypes.string,
@@ -141,7 +138,7 @@ const mapStateToProps = (state) => {
 export default connect(
   mapStateToProps,
   {
-    doRequestSummaryInformation,
     doRequestSummaryTable,
+    doRequestCount,
   },
 )(SummaryContainer);

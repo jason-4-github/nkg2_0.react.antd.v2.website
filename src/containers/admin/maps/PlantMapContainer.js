@@ -63,7 +63,7 @@ class PlantMapContainer extends Component {
       this.showMap(nextProps.connectStatus, nextProps.plantMapData);
   }
   showMap(statusArrs, plantMapData) {
-    if (!statusArrs || !plantMapData) return;
+    if (!statusArrs || !plantMapData || !plantMapData.features) return;
 
     const Stat = G2.Stat;
 
@@ -76,14 +76,15 @@ class PlantMapContainer extends Component {
     const disconnectLinMap = [];
     const mapData = plantMapData;
     const features = mapData.features;
+
     for (let i = 0; i < features.length; i += 1) {
       const name = features[i].properties.name;
       const isLine = features[i].properties.isLine;
       const isActive = features[i].properties.isActive;
-      let disconnect = true;
+      let disconnect = false;
       _.map(statusArrs, (value) => {
         _.map(value, (innerValue, key) => {
-          if (name === key) disconnect = innerValue;
+          if (name === key) disconnect = !innerValue;
         });
       });
 

@@ -1320,7 +1320,52 @@ export const wdRealTimePosition = (divs, line) => {
 };
 
 export const seagateRealTimePositioin = (divs, line) => {
-  if (line === 'P4') {
+  if (line === 'P6') {
+    return (
+      <div>
+        <img
+          alt=""
+          width="70%"
+          height="70%"
+          src="/images/p6Layout.png"
+        />
+        <div
+          id="ict1"
+          style={{
+            position: 'absolute',
+            width: '63px',
+            backgroundColor: 'yellow',
+            border: 'groove',
+            color: 'black',
+            top: '100px',
+            left: '700px',
+            fontSize: '14px',
+            zIndex: '5',
+            textAlign: 'center',
+          }}
+        >
+          ICT1
+        </div>
+        <div
+          id="ict2"
+          style={{
+            position: 'absolute',
+            width: '63px',
+            backgroundColor: 'yellow',
+            border: 'groove',
+            color: 'black',
+            top: '400px',
+            left: '657px',
+            fontSize: '14px',
+            zIndex: '5',
+            textAlign: 'center',
+          }}
+        >
+          ICT2
+        </div>
+      </div>
+    );
+  } else if (line === 'P4') {
     return (
       <div>
         <img

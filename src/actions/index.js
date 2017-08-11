@@ -6,8 +6,10 @@ import * as types from '../constants/actionTypes';
 
 // TODO(S.C.) => url need to be changed as production
 const serverConfig = {
+  // url: 'http://Lmsr175.calcomp.co.th:3000/apis',
   // url: 'http://172.21.37.5:5001/apis',
-  url: 'http://127.0.0.1:5001/apis',
+  // url: 'http://127.0.0.1:5001/apis',
+  url: 'http://10.5.82.105:3000/apis',
 };
 
 function checkStatus(response) {
@@ -23,13 +25,51 @@ function parseJSON(response) {
   return response.json();
 }
 
+export const doRequestCount = (passProps) => {
+  const countryName = passProps.countryName;
+  const factoryName = passProps.factoryName;
+  const plantName = passProps.plantName;
+  const lineName =  passProps.lineName;
+  const equipmentName = passProps.equipmentName;
+  const timeZone = passProps.timeZone;
+
+  return (dispatch) => {
+    dispatch({
+      type: types.ADMIN_COUNT_REQUEST,
+    })
+    fetch(`${serverConfig.url}/v0/get/output`+
+      `?countryName=${countryName}`+
+      `&factoryName=${factoryName}`+
+      `&plantName=${plantName}`+
+      `&lineName=${lineName}`+
+      `&equipmentName=${equipmentName}`+
+      `&timeZone=${timeZone}`
+    )
+    .then(checkStatus)
+    .then(parseJSON)
+    .then((data) => {
+      dispatch({
+        type: types.ADMIN_COUNT_SUCCESS,
+        countData: data,
+      });
+    })
+    .catch((err) => {
+      console.log('sss', err);
+      dispatch({
+        type: types.ADMIN_COUNT_FAILURE,
+        countData: [],
+      });
+    });
+  }
+}
+
 export const doRequestMapConnect = (passProps) => {
   const plant = passProps.plant;
   return (dispatch) => {
     dispatch({
       type: types.MAP_CONNECT_REQUEST,
     });
-    fetch(`${serverConfig.url}/map/${plant}`)
+    fetch(`${serverConfig.url}/v0/map/${plant}`)
       .then(checkStatus)
       .then(parseJSON)
       .then((data) => {
@@ -38,7 +78,8 @@ export const doRequestMapConnect = (passProps) => {
           connectStatus: data,
         });
       })
-      .catch(() => {
+      .catch((err) => {
+        console.log(err);
         dispatch({
           type: types.MAP_CONNECT_FAILURE,
           connectStatus: [],
@@ -71,32 +112,6 @@ export const doRequestRealTime = (passProps) => {
   };
 };
 
-export const doRequestOverviewInformation = (passProps) => {
-  const line = passProps.line;
-
-  return (dispatch) => {
-    dispatch({
-      type: types.ADMIN_OVERVIEW_INFORMATION_REQUEST,
-      overviewInformationData: [],
-    });
-    fetch(`${serverConfig.url}/dashboard/overview/information/${line}`)
-      .then(checkStatus)
-      .then(parseJSON)
-      .then((data) => {
-        dispatch({
-          type: types.ADMIN_OVERVIEW_INFORMATION_SUCCESS,
-          overviewInformationData: data,
-        });
-      })
-      .catch(() => {
-        dispatch({
-          type: types.ADMIN_OVERVIEW_INFORMATION_FAILURE,
-          overviewInformationData: [],
-        });
-      });
-  };
-};
-
 export const doRequestOverviewAlarmInfo = (passProps) => {
   const line = passProps.line;
 
@@ -118,32 +133,6 @@ export const doRequestOverviewAlarmInfo = (passProps) => {
         dispatch({
           type: types.ADMIN_OVERVIEW_ALARM_FAILURE,
           overviewAlarmData: [],
-        });
-      });
-  };
-};
-
-export const doRequestSummaryInformation = (passProps) => {
-  const line = passProps.line;
-
-  return (dispatch) => {
-    dispatch({
-      type: types.ADMIN_SUMMARY_INFORMATION_REQUEST,
-      summaryInformationData: [],
-    });
-    fetch(`${serverConfig.url}/dashboard/summary/information/${line}`)
-      .then(checkStatus)
-      .then(parseJSON)
-      .then((data) => {
-        dispatch({
-          type: types.ADMIN_SUMMARY_INFORMATION_SUCCESS,
-          summaryInformationData: data,
-        });
-      })
-      .catch(() => {
-        dispatch({
-          type: types.ADMIN_SUMMARY_INFORMATION_FAILURE,
-          summaryInformationData: [],
         });
       });
   };
@@ -175,90 +164,350 @@ export const doRequestSummaryTable = (passProps) => {
   };
 };
 
-export const doRequestOutputTable = (passProps) => {
-  const line = passProps.line;
-  const date = !passProps.date ? moment().format('YYYY-MM-DD') : passProps.date;
-  const filter = passProps.filter;
-
-  let token;
-  let dateFormatted;
-  if (filter === 'hour') {
-    token = 0;
-    dateFormatted = moment(date).format('YYYY.MM.DD');
-  } else if (filter === 'date') {
-    token = 1;
-    dateFormatted = moment(date).format('YYYY.MM.DD');
-  } else if (filter === 'month') {
-    token = 2;
-    dateFormatted = moment(date).format('YYYY.MM.DD');
-  } else if (filter === 'year') {
-    token = 3;
-    dateFormatted = moment(date).format('YYYY.MM.DD');
-  }
+export const doRequestOutputHour = (passProps) => {
+  const countryName = passProps.countryName;
+  const factoryName = passProps.factoryName;
+  const plantName = passProps.plantName;
+  const lineName =  passProps.lineName;
+  const equipmentName = passProps.equipmentName;
+  const timeZone = passProps.timeZone;
+  const actionType = passProps.actionType;
+  const date = passProps.date;
 
   return (dispatch) => {
     dispatch({
-      type: types.ADMIN_OUTPUT_TABLE_REQUEST,
-      outputTableData: [],
-    });
-    fetch(`${serverConfig.url}/dashboard/output/${line}/${token}?time=${dateFormatted}`)
-      .then(checkStatus)
-      .then(parseJSON)
-      .then((data) => {
-        console.log(data);
-        const dataProcessed = [];
-
-        if (filter === 'hour') {
-          _.map(data, (d) => {
-            dataProcessed.push({
-              InputCout: d.InputCout,
-              OutputNGCount: d.OutputNGCount,
-              OutputOKCount: d.OutputOKCount,
-              timeStamp: d.iDateH,
-            });
-          });
-        } else if (filter === 'date') {
-          _.map(data, (d) => {
-            dataProcessed.push({
-              InputCout: d.InputCout,
-              OutputNGCount: d.OutputNGCount,
-              OutputOKCount: d.OutputOKCount,
-              timeStamp: d.sDateYMD,
-            });
-          });
-        } else if (filter === 'month') {
-          _.map(data, (d) => {
-            dataProcessed.push({
-              InputCout: d.InputCout,
-              OutputNGCount: d.OutputNGCount,
-              OutputOKCount: d.OutputOKCount,
-              timeStamp: d.sDateYM,
-            });
-          });
-        } else if (filter === 'year') {
-          _.map(data, (d) => {
-            dataProcessed.push({
-              InputCout: d.InputCout,
-              OutputNGCount: d.OutputNGCount,
-              OutputOKCount: d.OutputOKCount,
-              timeStamp: d.sDateY,
-            });
-          });
-        }
-
-        dispatch({
-          type: types.ADMIN_OUTPUT_TABLE_SUCCESS,
-          outputTableData: dataProcessed,
-        });
-      })
-      .catch(() => {
-        dispatch({
-          type: types.ADMIN_OUTPUT_TABLE_FAILURE,
-          outputTableData: [],
-        });
+      type: types.ADMIN_OUTPUT_HOUR_REQUEST,
+    })
+    fetch(`${serverConfig.url}/v0/get/output`+
+      `?countryName="${countryName}"`+
+      `&factoryName="${factoryName}"`+
+      `&plantName="${plantName}"`+
+      `&lineName="${lineName}"`+
+      `&equipmentName=${equipmentName}`+
+      `&timeZone="${timeZone}"`+
+      `&actionType="${actionType}"`+
+      `&date="${date}"`
+    )
+    .then(checkStatus)
+    .then(parseJSON)
+    .then((data) => {
+      dispatch({
+        type: types.ADMIN_OUTPUT_HOUR_SUCCESS,
+        outputHourData: data.payload,
       });
-  };
-};
+    })
+    .catch((err) => {
+      console.log('sss', err);
+      dispatch({
+        type: types.ADMIN_OUTPUT_HOUR_FAILURE,
+        outputHourData: [],
+      });
+    });
+  }
+}
+
+export const doRequestOutputDate = (passProps) => {
+  const countryName = passProps.countryName;
+  const factoryName = passProps.factoryName;
+  const plantName = passProps.plantName;
+  const lineName =  passProps.lineName;
+  const equipmentName = passProps.equipmentName;
+  const timeZone = passProps.timeZone;
+  const actionType = passProps.actionType;
+  const startDate = passProps.startTime;
+  const endDate = passProps.endTime;
+
+  return (dispatch) => {
+    dispatch({
+      type: types.ADMIN_OUTPUT_DATE_REQUEST,
+    })
+    fetch(`${serverConfig.url}/v0/get/output`+
+      `?countryName="${countryName}"`+
+      `&factoryName="${factoryName}"`+
+      `&plantName="${plantName}"`+
+      `&lineName="${lineName}"`+
+      `&equipmentName=${equipmentName}`+
+      `&timeZone="${timeZone}"`+
+      `&actionType="${actionType}"`+
+      `&startDate="${startDate}"`+
+      `&endDate="${endDate}"`
+    )
+    .then(checkStatus)
+    .then(parseJSON)
+    .then((data) => {
+      dispatch({
+        type: types.ADMIN_OUTPUT_DATE_SUCCESS,
+        outputDateData: data.payload,
+      });
+    })
+    .catch((err) => {
+      console.log('sss', err);
+      dispatch({
+        type: types.ADMIN_OUTPUT_DATE_FAILURE,
+        outputDateData: [],
+      });
+    });
+  }
+}
+
+export const doRequestOutputMonth = (passProps) => {
+  const countryName = passProps.countryName;
+  const factoryName = passProps.factoryName;
+  const plantName = passProps.plantName;
+  const lineName =  passProps.lineName;
+  const equipmentName = passProps.equipmentName;
+  const timeZone = passProps.timeZone;
+  const actionType = passProps.actionType;
+  const startDate = passProps.startTime;
+  const endDate = passProps.endTime;
+
+  return (dispatch) => {
+    dispatch({
+      type: types.ADMIN_OUTPUT_MONTH_REQUEST,
+    })
+    fetch(`${serverConfig.url}/v0/get/output`+
+      `?countryName="${countryName}"`+
+      `&factoryName="${factoryName}"`+
+      `&plantName="${plantName}"`+
+      `&lineName="${lineName}"`+
+      `&equipmentName=${equipmentName}`+
+      `&timeZone="${timeZone}"`+
+      `&actionType="${actionType}"`+
+      `&startDate="${startDate}"`+
+      `&endDate="${endDate}"`
+    )
+    .then(checkStatus)
+    .then(parseJSON)
+    .then((data) => {
+      dispatch({
+        type: types.ADMIN_OUTPUT_MONTH_SUCCESS,
+        outputMonthData: data.payload,
+      });
+    })
+    .catch((err) => {
+      console.log('sss', err);
+      dispatch({
+        type: types.ADMIN_OUTPUT_MONTH_FAILURE,
+        outputMonthData: [],
+      });
+    });
+  }
+}
+
+export const doRequestOutputYear = (passProps) => {
+  const countryName = passProps.countryName;
+  const factoryName = passProps.factoryName;
+  const plantName = passProps.plantName;
+  const lineName =  passProps.lineName;
+  const equipmentName = passProps.equipmentName;
+  const timeZone = passProps.timeZone;
+  const actionType = passProps.actionType;
+
+  return (dispatch) => {
+    dispatch({
+      type: types.ADMIN_OUTPUT_YEAR_REQUEST,
+    })
+    fetch(`${serverConfig.url}/v0/get/output`+
+      `?countryName="${countryName}"`+
+      `&factoryName="${factoryName}"`+
+      `&plantName="${plantName}"`+
+      `&lineName="${lineName}"`+
+      `&equipmentName=${equipmentName}`+
+      `&timeZone="${timeZone}"`+
+      `&actionType="${actionType}"`
+    )
+    .then(checkStatus)
+    .then(parseJSON)
+    .then((data) => {
+      // data.payload.push({id: 2016, time: 2016, okQuantity: 37217, ngQuantity: 210});
+      dispatch({
+        type: types.ADMIN_OUTPUT_YEAR_SUCCESS,
+        outputYearData: data.payload,
+      });
+    })
+    .catch((err) => {
+      console.log('sss', err);
+      dispatch({
+        type: types.ADMIN_OUTPUT_YEAR_FAILURE,
+        outputYearData: [],
+      });
+    });
+  }
+}
+
+export const doRequestAlarmHour = (passProps) => {
+  const countryName = passProps.countryName;
+  const factoryName = passProps.factoryName;
+  const plantName = passProps.plantName;
+  const lineName =  passProps.lineName;
+  const equipmentName = passProps.equipmentName;
+  const timeZone = passProps.timeZone;
+  const actionType = passProps.actionType;
+  const date = passProps.date;
+
+  return (dispatch) => {
+    dispatch({
+      type: types.ADMIN_ALARM_HOUR_REQUEST,
+    })
+    fetch(`${serverConfig.url}/v0/get/alarm`+
+      `?countryName="${countryName}"`+
+      `&factoryName="${factoryName}"`+
+      `&plantName="${plantName}"`+
+      `&lineName="${lineName}"`+
+      `&equipmentName=${equipmentName}`+
+      `&timeZone="${timeZone}"`+
+      `&actionType="${actionType}"`+
+      `&date="${date}"`
+    )
+    .then(checkStatus)
+    .then(parseJSON)
+    .then((data) => {
+      dispatch({
+        type: types.ADMIN_ALARM_HOUR_SUCCESS,
+        alarmHourData: data.payload,
+      });
+    })
+    .catch((err) => {
+      console.log('sss', err);
+      dispatch({
+        type: types.ADMIN_ALARM_HOUR_FAILURE,
+        alarmHourData: [],
+      });
+    });
+  }
+}
+
+export const doRequestAlarmDate = (passProps) => {
+  const countryName = passProps.countryName;
+  const factoryName = passProps.factoryName;
+  const plantName = passProps.plantName;
+  const lineName =  passProps.lineName;
+  const equipmentName = passProps.equipmentName;
+  const timeZone = passProps.timeZone;
+  const actionType = passProps.actionType;
+  const startDate = passProps.startTime;
+  const endDate = passProps.endTime;
+
+  return (dispatch) => {
+    dispatch({
+      type: types.ADMIN_ALARM_DATE_REQUEST,
+    })
+    fetch(`${serverConfig.url}/v0/get/alarm`+
+      `?countryName="${countryName}"`+
+      `&factoryName="${factoryName}"`+
+      `&plantName="${plantName}"`+
+      `&lineName="${lineName}"`+
+      `&equipmentName=${equipmentName}`+
+      `&timeZone="${timeZone}"`+
+      `&actionType="${actionType}"`+
+      `&startDate="${startDate}"`+
+      `&endDate="${endDate}"`
+    )
+    .then(checkStatus)
+    .then(parseJSON)
+    .then((data) => {
+      dispatch({
+        type: types.ADMIN_ALARM_DATE_SUCCESS,
+        alarmDateData: data.payload,
+      });
+    })
+    .catch((err) => {
+      console.log('sss', err);
+      dispatch({
+        type: types.ADMIN_ALARM_DATE_FAILURE,
+        alarmDateData: [],
+      });
+    });
+  }
+}
+
+export const doRequestAlarmMonth = (passProps) => {
+  const countryName = passProps.countryName;
+  const factoryName = passProps.factoryName;
+  const plantName = passProps.plantName;
+  const lineName =  passProps.lineName;
+  const equipmentName = passProps.equipmentName;
+  const timeZone = passProps.timeZone;
+  const actionType = passProps.actionType;
+  const startDate = passProps.startTime;
+  const endDate = passProps.endTime;
+
+  return (dispatch) => {
+    dispatch({
+      type: types.ADMIN_ALARM_MONTH_REQUEST,
+    })
+    fetch(`${serverConfig.url}/v0/get/alarm`+
+      `?countryName="${countryName}"`+
+      `&factoryName="${factoryName}"`+
+      `&plantName="${plantName}"`+
+      `&lineName="${lineName}"`+
+      `&equipmentName=${equipmentName}`+
+      `&timeZone="${timeZone}"`+
+      `&actionType="${actionType}"`+
+      `&startDate="${startDate}"`+
+      `&endDate="${endDate}"`
+    )
+    .then(checkStatus)
+    .then(parseJSON)
+    .then((data) => {
+      dispatch({
+        type: types.ADMIN_ALARM_MONTH_SUCCESS,
+        alarmMonthData: data.payload,
+      });
+    })
+    .catch((err) => {
+      console.log('sss', err);
+      dispatch({
+        type: types.ADMIN_ALARM_MONTH_FAILURE,
+        alarmMonthData: [],
+      });
+    });
+  }
+}
+
+export const doRequestAlarmDuration = (passProps) => {
+  const countryName = passProps.countryName;
+  const factoryName = passProps.factoryName;
+  const plantName = passProps.plantName;
+  const lineName =  passProps.lineName;
+  const equipmentName = passProps.equipmentName;
+  const timeZone = passProps.timeZone;
+  const actionType = passProps.actionType;
+  const startDate = passProps.startTime;
+  const endDate = passProps.endTime;
+
+  return (dispatch) => {
+    dispatch({
+      type: types.ADMIN_ALARM_DURATION_REQUEST,
+    })
+    fetch(`${serverConfig.url}/v0/get/alarm`+
+      `?countryName="${countryName}"`+
+      `&factoryName="${factoryName}"`+
+      `&plantName="${plantName}"`+
+      `&lineName="${lineName}"`+
+      `&equipmentName=${equipmentName}`+
+      `&timeZone="${timeZone}"`+
+      `&actionType="${actionType}"`+
+      `&startDate="${startDate}"`+
+      `&endDate="${endDate}"`
+    )
+    .then(checkStatus)
+    .then(parseJSON)
+    .then((data) => {
+      dispatch({
+        type: types.ADMIN_ALARM_DURATION_SUCCESS,
+        alarmDurationData: data.payload,
+      });
+    })
+    .catch((err) => {
+      console.log('sss', err);
+      dispatch({
+        type: types.ADMIN_ALARM_DURATION_FAILURE,
+        alarmDurationData: [],
+      });
+    });
+  }
+}
 
 export const doRequestDowntimeTable = (passProps) => {
   const line = passProps.line;
@@ -362,7 +611,7 @@ export const doRequestForWorldMap = (passProps) => {
       type: types.WORLD_MAP_REQUEST,
       worldMapData: [],
     });
-    fetch(`${serverConfig.url}/globalCountries`)
+    fetch(`${serverConfig.url}/v0/geo/countries`)
       .then(checkStatus)
       .then(parseJSON)
       .then((data) => {
@@ -388,7 +637,7 @@ export const doRequestForFactoryMap = (passProps) => {
       type: types.FACTORY_MAP_REQUEST,
       factoryMapData: {},
     });
-    fetch(`${serverConfig.url}/factories?factory=${factory}`)
+    fetch(`${serverConfig.url}/v0/geo/factories?factory=${factory}`)
       .then(checkStatus)
       .then(parseJSON)
       .then((data) => {
@@ -415,7 +664,7 @@ export const doRequestForPlantMap = (passProps) => {
       type: types.PLANT_MAP_REQUEST,
       plantMapData: {},
     });
-    fetch(`${serverConfig.url}/plants?factory=${factory}&?plant=${plant}`)
+    fetch(`${serverConfig.url}/v0/geo/plants?factory=${factory}&plant=${plant}`)
       .then(checkStatus)
       .then(parseJSON)
       .then((data) => {
@@ -424,7 +673,8 @@ export const doRequestForPlantMap = (passProps) => {
           plantMapData: data,
         });
       })
-      .catch(() => {
+      .catch((err) => {
+        console.log(err);
         dispatch({
           type: types.PLANT_MAP_FAILURE,
           plantMapData: {},

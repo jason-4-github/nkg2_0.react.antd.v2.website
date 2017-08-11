@@ -5,6 +5,69 @@ const initialState = {
 
 const admin = (state = initialState, action) => {
   switch (action.type) {
+    case types.ADMIN_ALARM_HOUR_REQUEST:
+    case types.ADMIN_ALARM_HOUR_SUCCESS:
+    case types.ADMIN_ALARM_HOUR_FAILURE:
+      return {
+        ...state,
+        ...action,
+      }
+    case types.ADMIN_ALARM_DATE_REQUEST:
+    case types.ADMIN_ALARM_DATE_SUCCESS:
+    case types.ADMIN_ALARM_DATE_FAILURE:
+      return {
+        ...state,
+        ...action,
+      }
+    case types.ADMIN_ALARM_MONTH_REQUEST:
+    case types.ADMIN_ALARM_MONTH_SUCCESS:
+    case types.ADMIN_ALARM_MONTH_FAILURE:
+       return {
+        ...state,
+        ...action,
+      }
+    case types.ADMIN_ALARM_DURATION_REQUEST:
+    case types.ADMIN_ALARM_DURATION_SUCCESS:
+    case types.ADMIN_ALARM_DURATION_FAILURE:
+      return {
+        ...state,
+        ...action,
+      }
+    case types.ADMIN_OUTPUT_HOUR_REQUEST:
+    case types.ADMIN_OUTPUT_HOUR_SUCCESS:
+    case types.ADMIN_OUTPUT_HOUR_FAILURE:
+      return {
+        ...state,
+        ...action,
+      }
+    case types.ADMIN_OUTPUT_DATE_REQUEST:
+    case types.ADMIN_OUTPUT_DATE_SUCCESS:
+    case types.ADMIN_OUTPUT_DATE_FAILURE:
+      return {
+        ...state,
+        ...action,
+      }
+    case types.ADMIN_OUTPUT_MONTH_REQUEST:
+    case types.ADMIN_OUTPUT_MONTH_SUCCESS:
+    case types.ADMIN_OUTPUT_MONTH_FAILURE:
+       return {
+        ...state,
+        ...action,
+      }
+    case types.ADMIN_OUTPUT_YEAR_REQUEST:
+    case types.ADMIN_OUTPUT_YEAR_SUCCESS:
+    case types.ADMIN_OUTPUT_YEAR_FAILURE:
+      return {
+        ...state,
+        ...action,
+      }
+    case types.ADMIN_COUNT_REQUEST:
+    case types.ADMIN_COUNT_SUCCESS:
+    case types.ADMIN_COUNT_FAILURE:
+      return {
+        ...state,
+        ...action,
+      }
     case types.MAP_CONNECT_FAILURE:
     case types.MAP_CONNECT_SUCCESS:
       return {

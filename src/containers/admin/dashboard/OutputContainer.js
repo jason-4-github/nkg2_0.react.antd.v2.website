@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Row, Col, Card, Table, Radio, DatePicker, Button, Dropdown, Menu, Icon } from 'antd';
+import { Row, Col, Card, DatePicker, Button, Dropdown, Menu, Icon, Spin } from 'antd';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import G2 from 'g2';
@@ -7,14 +7,14 @@ import createG2 from 'g2-react';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 
-import { outputColumns } from './../../../constants/tableColumns';
 import {
-  doRequestOutputTable,
+  doRequestOutputHour,
+  doRequestOutputDate,
+  doRequestOutputMonth,
+  doRequestOutputYear,
 } from '../../../actions';
 
 const { MonthPicker } = DatePicker;
-const RadioButton = Radio.Button;
-const RadioGroup = Radio.Group;
 
 const dateFormat = 'YYYY-MM-DD';
 const monthFormat = 'YYYY-MM';
@@ -23,106 +23,103 @@ class OutputContainer extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      filterValue: 'date',
-      datePickerValue: moment().format('YYYY-MM-DD'),
-      isSearchButtonDisable: true,
-      monthDropdownValue: moment().format('YYYY'),
-    };
+    this.state = { yearValue: moment().format('YYYY') };
 
-    this.onFilterChange = this.onFilterChange.bind(this);
     this.onDatePickerChange = this.onDatePickerChange.bind(this);
     this.doSearch = this.doSearch.bind(this);
     this.renderPicker = this.renderPicker.bind(this);
     this.handleMonthDropdown = this.handleMonthDropdown.bind(this);
   }
   componentDidMount() {
-    this.doSearch();
+    const date = moment().format('YYYY-MM-DD');
+    this.doSearch('all', date);
   }
+  // do the date or hour action
   onDatePickerChange(date, dateString) {
-    this.setState({
-      datePickerValue: dateString,
-      isSearchButtonDisable: !dateString,
-    });
+    const isMonth = dateString.split('-').length === 2 || false;
+    this.doSearch( isMonth ? 'date' : 'hour', dateString);
   }
-  onFilterChange(e) {
+  doSearch(type, onChangeValue) {
     /* eslint-disable no-shadow */
-    const { doRequestOutputTable } = this.props;
+    const {
+      doRequestOutputHour,
+      doRequestOutputDate,
+      doRequestOutputMonth,
+      doRequestOutputYear,
+    } = this.props;
     /* eslint-enable no-shadow */
+    const countryName = this.props.params.country;
+    const factoryName = this.props.params.factory;
+    const plantName = this.props.params.plant;
+    const lineName = this.props.params.line;
+    const year = type !== 'month' ? onChangeValue.split('-')[0] : onChangeValue;
+    const month = type !== 'month' ? onChangeValue.split('-')[1] : onChangeValue;
+    const lastDay = moment(`${year}-${month}`, "YYYY-MM").daysInMonth();
+    const date = onChangeValue
+    const startTime = type === 'month' ? `${year}-01-01` : `${year}-${month}-01`;
+    const endTime = type === 'month' ? `${year}-12-31` : `${year}-${month}-${lastDay}`;
 
-    const filterDate = moment().format(e.target.value === 'month' ? 'YYYY-MM' : 'YYYY-MM-DD');
+    // (XXX): need modify more common sense
+    const equipmentName = 'ict';
+    const timeZone = 'Asia/Bangkok';
 
-    doRequestOutputTable({
-      line: this.props.params.line,
-      date: filterDate,
-      filter: e.target.value,
-    });
+    const defaultobjs = {
+      countryName,
+      factoryName,
+      plantName,
+      lineName,
+      equipmentName,
+      timeZone,
+      date,
+      startTime,
+      endTime,
+    }
 
-    this.setState({
-      datePickerValue: '',
-      filterValue: e.target.value,
-    });
+    // the function config the different actionType
+    const defaultObjsFunc = (type, defaultobjs) => {
+      defaultobjs.actionType = type;
+      return defaultobjs;
+    }
 
-    if (e.target.value === 'year') {
-      this.setState({
-        isSearchButtonDisable: false,
-      });
-    } else {
-      setTimeout(() => {
-        this.setState({
-          isSearchButtonDisable: !this.state.datePickerValue,
-        });
-      }, 100);
+    // call action with type
+    if (type === 'hour') doRequestOutputHour(defaultObjsFunc('hour', defaultobjs));
+    else if (type ==='date') doRequestOutputDate(defaultObjsFunc('date', defaultobjs));
+    else if (type === 'month') doRequestOutputMonth(defaultObjsFunc('month', defaultobjs));
+    else {
+      doRequestOutputHour(defaultObjsFunc('hour', defaultobjs));
+      doRequestOutputDate(defaultObjsFunc('date', defaultobjs));
+      doRequestOutputMonth(defaultObjsFunc('month', defaultobjs));
+      doRequestOutputYear(defaultObjsFunc('year', defaultobjs));
     }
   }
-  doSearch() {
-    /* eslint-disable no-shadow */
-    const { doRequestOutputTable } = this.props;
-    /* eslint-enable no-shadow */
-
-    doRequestOutputTable({
-      line: this.props.params.line,
-      date: this.state.datePickerValue,
-      filter: this.state.filterValue,
-    });
-  }
-  generateTableDataSource(data) {
-    const arr = [];
-    _.map(data, (d, idx) => {
-      let yr = ((d.OutputOKCount / (d.OutputOKCount + d.OutputNGCount)) * 100).toFixed(2);
-
-      if (isNaN(yr)) { yr = 0; }
-
-      arr.push({
-        key: idx,
-        no: idx + 1,
-        date: d.timeStamp,
-        output: d.OutputOKCount,
-        yieldRate: `${yr}%`,
-      });
-    });
-
-    return arr;
-  }
-  generateChart(data) {
+  generateChart(data, type, actionType) {
     if (!data) { return []; }
+
+    // determine the animate active or not
+    const actionTypeSplit = actionType.split('_');
+    const animate = actionTypeSplit[3] === 'REQUEST' ?  '' : actionTypeSplit[2].toLowerCase();
+
     const arr = [];
     _.map(data, (d) => {
-      const yr = ((d.OutputOKCount / (d.OutputOKCount + d.OutputNGCount)) * 100);
+      const yr = ((d.okQuantity / (d.okQuantity + d.ngQuantity)) * 100);
       let yrRounding = Math.round(yr * 100) / 100;
+      let timeString = d.time + '';
 
       if (isNaN(yrRounding)) { yrRounding = 0; }
 
+      if (type === 'hour') timeString = _.split(d.time, ':')[0];
+      else if (type === 'date') timeString = _.split(d.time, '/')[1];
+
       arr.push({
-        dateString: _.split(d.timeStamp, '-').join(''),
-        outputCount: d.OutputOKCount,
+        dateString: timeString,
+        okQuantity: d.okQuantity,
         yieldRate: yrRounding,
       });
     });
 
     const Frame = G2.Frame;
     let frame = new Frame(arr);
-    frame = Frame.combinColumns(frame, ['outputCount'], 'count', 'type', ['dateString', 'yieldRate']);
+    frame = Frame.combinColumns(frame, ['okQuantity'], 'count', 'type', ['dateString', 'yieldRate']);
 
     const Chart = createG2((chart) => {
       chart.col('count', { alias: 'Output', min: 0 });
@@ -147,33 +144,31 @@ class OutputContainer extends Component {
       chart.point()
         .position('dateString*yieldRate')
         .color('#5ed470');
-
+      // control the animate
+      if(animate !== type)chart.animate(false);
       chart.render();
     });
 
     return (
       <Chart
         data={frame}
-        width={450}
-        height={450}
+        width={550}
+        height={250}
         forceFit
       />
     );
   }
   handleMonthDropdown(e) {
     const monthOptions = ['2016', '2017'];
-    this.setState({
-      monthDropdownValue: monthOptions[e.key - 1],
-      datePickerValue: monthOptions[e.key - 1],
-      isSearchButtonDisable: !monthOptions[e.key - 1],
-    });
+    this.doSearch('month', monthOptions[e.key - 1]);
+    this.setState({ yearValue: monthOptions[e.key - 1] });
   }
-  renderPicker() {
-    if (this.state.filterValue === 'year') {
+  renderPicker(type) {
+    if (type === 'year') {
       return '';
     }
     let now;
-    if (this.state.filterValue === 'month') {
+    if (type === 'month') {
       now = moment().format('YYYY');
       const menu = (
         <Menu onSelect={this.handleMonthDropdown}>
@@ -184,12 +179,12 @@ class OutputContainer extends Component {
       return (
         <Dropdown overlay={menu} trigger={['click']}>
           <Button>
-            { this.state.monthDropdownValue } <Icon type="down" />
+            { this.state.yearValue } <Icon type="down" />
           </Button>
         </Dropdown>
       );
     }
-    if (this.state.filterValue === 'date') {
+    if (type === 'date') {
       now = moment().format('YYYY/MM');
       return (
         <MonthPicker
@@ -211,42 +206,117 @@ class OutputContainer extends Component {
     );
   }
   render() {
-    const { outputTableData } = this.props;
+    const {
+      outputHourData, outputDateData, outputMonthData, outputYearData, type
+    } = this.props;
+    const actionTypeSplit = type.split('_');
+    let hourRequestSpin, dateRequestSpin, monthRequestSpin, yearRequestSpin;
+    if ( actionTypeSplit[3] === 'REQUEST') {
+      hourRequestSpin = actionTypeSplit[2] === 'HOUR' || false;
+      dateRequestSpin = actionTypeSplit[2] === 'DATE' || false;
+      monthRequestSpin = actionTypeSplit[2] === 'MONTH' || false;
+      yearRequestSpin = actionTypeSplit[2] === 'YEAR' || false;
+    }
 
     return (
       <div id="output-container">
-        <Row>
-          <Col span={24} className="col">
+        <Row gutter={10}>
+          <Col span={12} className="col chartRow gutter-row">
             <Card
+              className="gutter-box"
               title={
-                <div style={{ textAlign: 'right' }}>
-                  <RadioGroup defaultValue="date" onChange={this.onFilterChange}>
-                    <RadioButton value="hour">Hour</RadioButton>
-                    <RadioButton value="date">Date</RadioButton>
-                    <RadioButton value="month">Month</RadioButton>
-                    <RadioButton value="year">Year</RadioButton>
-                  </RadioGroup>
-                  { this.renderPicker() }
-                  <Button
-                    type="primary"
-                    shape="circle"
-                    icon="search"
-                    className="info-margin"
-                    onClick={this.doSearch}
-                    disabled={this.state.isSearchButtonDisable}
-                  />
-                </div>
+                <Row>
+                  <Col span={12}>
+                    <h3 className="leftWord">
+                      Hour
+                    </h3>
+                  </Col>
+                  <Col span={12} className="rightWord">
+                    { this.renderPicker() }
+                  </Col>
+                </Row>
               }
             >
-              { this.generateChart(outputTableData) }
+              { outputHourData !== undefined && !hourRequestSpin
+                ? this.generateChart(outputHourData, 'hour', type)
+                : <div className="defaultChartDiv">
+                    <div className="emptyDiv" />
+                    <Spin />
+                  </div>
+              }
             </Card>
           </Col>
-          <Col span={24} className="col">
-            <Card>
-              <Table
-                dataSource={this.generateTableDataSource(outputTableData)}
-                columns={outputColumns}
-              />
+          <Col span={12} className="col chartRow gutter-row">
+            <Card
+              className="gutter-box"
+              title={
+                <Row>
+                  <Col span={12}>
+                    <h3 className="leftWord">
+                      Month
+                    </h3>
+                  </Col>
+                  <Col span={12} className="rightWord">
+                    { this.renderPicker('month') }
+                  </Col>
+                </Row>
+              }
+            >
+              { outputMonthData !== undefined && !monthRequestSpin
+                ? this.generateChart(outputMonthData, 'month', type)
+                  : <div className="defaultChartDiv">
+                    <div className="emptyDiv" />
+                    <Spin />
+                  </div>
+              }
+            </Card>
+          </Col>
+          <Col span={24} className="chartPadding" />
+          <Col span={12} className="col chartRow gutter-row">
+            <Card
+              className="gutter-box"
+              title={
+                <Row>
+                  <Col span={12}>
+                    <h3 className="leftWord">
+                      Date
+                    </h3>
+                  </Col>
+                  <Col span={12} className="rightWord">
+                    { this.renderPicker('date') }
+                  </Col>
+                </Row>
+              }
+            >
+              { outputDateData !== undefined && !dateRequestSpin
+                ? this.generateChart(outputDateData, 'date', type)
+                : <div className="defaultChartDiv">
+                    <div className="emptyDiv" />
+                    <Spin />
+                  </div>
+              }
+            </Card>
+          </Col>
+          <Col span={12} className="col chartRow gutter-row">
+            <Card
+              className="gutter-box"
+              title={
+                <Row>
+                  <Col span={12}>
+                    <h3 className="leftWord">
+                      Year
+                    </h3>
+                  </Col>
+                </Row>
+              }
+            >
+              { outputYearData !== undefined && !yearRequestSpin
+                ? this.generateChart(outputYearData, 'year', type)
+                : <div className="defaultChartDiv">
+                    <div className="emptyDiv" />
+                    <Spin />
+                  </div>
+              }
             </Card>
           </Col>
         </Row>
@@ -257,7 +327,10 @@ class OutputContainer extends Component {
 
 OutputContainer.propTypes = {
   params: PropTypes.object,
-  doRequestOutputTable: PropTypes.func,
+  doRequestOutputHour: PropTypes.func,
+  doRequestOutputDate: PropTypes.func,
+  doRequestOutputMonth: PropTypes.func,
+  doRequestOutputYear: PropTypes.func,
   outputTableData: PropTypes.array,
 };
 
@@ -270,6 +343,9 @@ const mapStateToProps = (state) => {
 export default connect(
   mapStateToProps,
   {
-    doRequestOutputTable,
+    doRequestOutputHour,
+    doRequestOutputDate,
+    doRequestOutputMonth,
+    doRequestOutputYear,
   },
 )(OutputContainer);

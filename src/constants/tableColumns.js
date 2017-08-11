@@ -23,15 +23,7 @@ export const alarmColumns = [
     title: 'Alarm Time',
     dataIndex: 'alarmTime',
     key: 'alarmTime',
-  }, {
-    title: 'Idle Time',
-    dataIndex: 'idleTime',
-    key: 'idleTime',
-  }, {
-    title: 'Alarm Total Time',
-    dataIndex: 'alarmTotalTime',
-    key: 'alarmTotalTime',
-  },
+  }
 ];
 
 export const downtimeColumns = [
