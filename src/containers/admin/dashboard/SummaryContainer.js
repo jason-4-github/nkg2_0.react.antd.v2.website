@@ -44,15 +44,19 @@ class SummaryContainer extends Component {
     }
     if (!countData) { return (<div><Spin /></div>); }
     const ictData = countData
-
-    const ictYieldRate =
-      ((ictData.okQuantity / (ictData.okQuantity + ictData.ngQuantity)) * 100).toFixed(1);
+    const isZero =
+      ictData.okQuantity + ictData.ngQuantity === 0 || ictData.okQuantity + ictData.ngQuantity === NaN
+      ? true
+      : false;
+    const isDisconnect = _.isEmpty(ictData) || false;
+    const ictYieldRate = isZero || isDisconnect
+      ? '0.00'
+      : ((ictData.okQuantity / (ictData.okQuantity + ictData.ngQuantity)) * 100).toFixed(2);
 
     const productData = [];
     const productTitle = ['Input', 'Output', 'NG Count', 'Yield Rate'];
-    const productContent = [ictData.okQuantity + ictData.ngQuantity, ictData.okQuantity,
-      ictData.ngQuantity, ictYieldRate];
     const productCardColors = ['#2ab4c0', '#f36a5a', '#5C9BD1', '#8877a9'];
+    const productContent = [ictData.okQuantity + ictData.ngQuantity, ictData.okQuantity, ictData.ngQuantity, ictYieldRate];
 
     _.map(productContent, (value, key) => {
       productData.push(

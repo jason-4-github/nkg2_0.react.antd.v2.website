@@ -91,6 +91,10 @@ class AlarmContainer extends Component {
     // the function config the different actionType
     const defaultObjsFunc = (type, defaultobjs) => {
       defaultobjs.actionType = type;
+      if (type === 'duration') {
+        defaultobjs.endTime = date;
+        defaultobjs.startTime = moment(date, 'YYYY-MM-DD').add(-6, 'days').format('YYYY-MM-DD');
+      }
       return defaultobjs;
     }
 
@@ -103,7 +107,7 @@ class AlarmContainer extends Component {
       doRequestAlarmHour(defaultObjsFunc('hour', defaultobjs));
       doRequestAlarmDate(defaultObjsFunc('date', defaultobjs));
       doRequestAlarmMonth(defaultObjsFunc('month', defaultobjs));
-      doRequestAlarmDuration(defaultObjsFunc('year', defaultobjs));
+      doRequestAlarmDuration(defaultObjsFunc('duration', defaultobjs));
     }
   }
   // process data for table

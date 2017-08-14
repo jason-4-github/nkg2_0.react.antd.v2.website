@@ -67,10 +67,6 @@ class DowntimeContainer extends Component {
     const date = onChangeValue
     let startTime = type === 'month' ? `${year}-01-01` : `${year}-${month}-01`;
     let endTime = type === 'month' ? `${year}-12-31` : `${year}-${month}-${lastDay}`;
-    if (type === 'duration') {
-      endTime = date;
-      startTime = moment(date, 'YYYY-MM-DD').add(-6, 'days').format('YYYY-MM-DD');
-    }
 
     // (XXX): need modify more common sense
     const equipmentName = 'ict';
@@ -91,6 +87,10 @@ class DowntimeContainer extends Component {
     // the function config the different actionType
     const defaultObjsFunc = (type, defaultobjs) => {
       defaultobjs.actionType = type;
+      if (type === 'duration') {
+        defaultobjs.endTime = date;
+        defaultobjs.startTime = moment(date, 'YYYY-MM-DD').add(-6, 'days').format('YYYY-MM-DD');
+      }
       return defaultobjs;
     }
 
@@ -123,7 +123,7 @@ class DowntimeContainer extends Component {
     return arr;
   }
   generateChart(data, type, actionType) {
-    if (!data) { return []; }
+    if (!data || _.isEmpty(data)) { return []; }
 
     // determine the animate active or not
     const actionTypeSplit = actionType.split('_');
