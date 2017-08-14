@@ -6,9 +6,10 @@ import * as types from '../constants/actionTypes';
 
 // TODO(S.C.) => url need to be changed as production
 const serverConfig = {
-  url: 'http://Lmsr175.calcomp.co.th:3000/apis',
+  // url: 'http://Lmsr175.calcomp.co.th:3000/apis',
   // url: 'http://172.21.37.5:5001/apis',
   // url: 'http://127.0.0.1:5001/apis',
+  url: 'http://10.5.82.105:3000/apis',
 };
 
 function checkStatus(response) {
@@ -163,172 +164,47 @@ export const doRequestSummaryTable = (passProps) => {
   };
 };
 
-export const doRequestOutputHour = (passProps) => {
+export const doRequestOutput = (passProps) => {
   const countryName = passProps.countryName;
   const factoryName = passProps.factoryName;
   const plantName = passProps.plantName;
   const lineName =  passProps.lineName;
   const equipmentName = passProps.equipmentName;
   const timeZone = passProps.timeZone;
-  const actionType = passProps.actionType;
+  const timeUnit = passProps.actionType;
   const date = passProps.date;
-
-  return (dispatch) => {
-    dispatch({
-      type: types.ADMIN_OUTPUT_HOUR_REQUEST,
-    })
-    fetch(`${serverConfig.url}/v0/get/output`+
-      `?countryName="${countryName}"`+
-      `&factoryName="${factoryName}"`+
-      `&plantName="${plantName}"`+
-      `&lineName="${lineName}"`+
-      `&equipmentName=${equipmentName}`+
-      `&timeZone="${timeZone}"`+
-      `&actionType="${actionType}"`+
-      `&date="${date}"`
-    )
-    .then(checkStatus)
-    .then(parseJSON)
-    .then((data) => {
-      dispatch({
-        type: types.ADMIN_OUTPUT_HOUR_SUCCESS,
-        outputHourData: data.payload,
-      });
-    })
-    .catch((err) => {
-      console.log('sss', err);
-      dispatch({
-        type: types.ADMIN_OUTPUT_HOUR_FAILURE,
-        outputHourData: [],
-      });
-    });
-  }
-}
-
-export const doRequestOutputDate = (passProps) => {
-  const countryName = passProps.countryName;
-  const factoryName = passProps.factoryName;
-  const plantName = passProps.plantName;
-  const lineName =  passProps.lineName;
-  const equipmentName = passProps.equipmentName;
-  const timeZone = passProps.timeZone;
-  const actionType = passProps.actionType;
   const startDate = passProps.startTime;
   const endDate = passProps.endTime;
 
+  let fetchUrl = `${serverConfig.url}/v0/get/output`+
+    `?countryName="${countryName}"`+
+    `&factoryName="${factoryName}"`+
+    `&plantName="${plantName}"`+
+    `&lineName="${lineName}"`+
+    `&equipmentName=${equipmentName}`+
+    `&timeZone="${timeZone}"`+
+    `&timeUnit="${timeUnit}"`;
+  if (timeUnit === 'hour') fetchUrl += `&date="${date}"`;
+  else fetchUrl +=`&startDate="${startDate}"&endDate="${endDate}"`
+
   return (dispatch) => {
     dispatch({
-      type: types.ADMIN_OUTPUT_DATE_REQUEST,
+      type: types.ADMIN_OUTPUT_CHART_REQUEST,
     })
-    fetch(`${serverConfig.url}/v0/get/output`+
-      `?countryName="${countryName}"`+
-      `&factoryName="${factoryName}"`+
-      `&plantName="${plantName}"`+
-      `&lineName="${lineName}"`+
-      `&equipmentName=${equipmentName}`+
-      `&timeZone="${timeZone}"`+
-      `&actionType="${actionType}"`+
-      `&startDate="${startDate}"`+
-      `&endDate="${endDate}"`
-    )
+    fetch(fetchUrl)
     .then(checkStatus)
     .then(parseJSON)
     .then((data) => {
       dispatch({
-        type: types.ADMIN_OUTPUT_DATE_SUCCESS,
-        outputDateData: data.payload,
+        type: types.ADMIN_OUTPUT_CHART_SUCCESS,
+        outputData: data.payload,
       });
     })
     .catch((err) => {
       console.log('sss', err);
       dispatch({
-        type: types.ADMIN_OUTPUT_DATE_FAILURE,
-        outputDateData: [],
-      });
-    });
-  }
-}
-
-export const doRequestOutputMonth = (passProps) => {
-  const countryName = passProps.countryName;
-  const factoryName = passProps.factoryName;
-  const plantName = passProps.plantName;
-  const lineName =  passProps.lineName;
-  const equipmentName = passProps.equipmentName;
-  const timeZone = passProps.timeZone;
-  const actionType = passProps.actionType;
-  const startDate = passProps.startTime;
-  const endDate = passProps.endTime;
-
-  return (dispatch) => {
-    dispatch({
-      type: types.ADMIN_OUTPUT_MONTH_REQUEST,
-    })
-    fetch(`${serverConfig.url}/v0/get/output`+
-      `?countryName="${countryName}"`+
-      `&factoryName="${factoryName}"`+
-      `&plantName="${plantName}"`+
-      `&lineName="${lineName}"`+
-      `&equipmentName=${equipmentName}`+
-      `&timeZone="${timeZone}"`+
-      `&actionType="${actionType}"`+
-      `&startDate="${startDate}"`+
-      `&endDate="${endDate}"`
-    )
-    .then(checkStatus)
-    .then(parseJSON)
-    .then((data) => {
-      dispatch({
-        type: types.ADMIN_OUTPUT_MONTH_SUCCESS,
-        outputMonthData: data.payload,
-      });
-    })
-    .catch((err) => {
-      console.log('sss', err);
-      dispatch({
-        type: types.ADMIN_OUTPUT_MONTH_FAILURE,
-        outputMonthData: [],
-      });
-    });
-  }
-}
-
-export const doRequestOutputYear = (passProps) => {
-  const countryName = passProps.countryName;
-  const factoryName = passProps.factoryName;
-  const plantName = passProps.plantName;
-  const lineName =  passProps.lineName;
-  const equipmentName = passProps.equipmentName;
-  const timeZone = passProps.timeZone;
-  const actionType = passProps.actionType;
-
-  return (dispatch) => {
-    dispatch({
-      type: types.ADMIN_OUTPUT_YEAR_REQUEST,
-    })
-    fetch(`${serverConfig.url}/v0/get/output`+
-      `?countryName="${countryName}"`+
-      `&factoryName="${factoryName}"`+
-      `&plantName="${plantName}"`+
-      `&lineName="${lineName}"`+
-      `&equipmentName=${equipmentName}`+
-      `&timeZone="${timeZone}"`+
-      `&actionType="${actionType}"`
-    )
-    .then(checkStatus)
-    .then(parseJSON)
-    .then((data) => {
-      // data.payload.push({id: 2016, time: 2016, okQuantity: 37217, ngQuantity: 210});
-      dispatch({
-        type: types.ADMIN_OUTPUT_YEAR_SUCCESS,
-        outputYearData: data.payload,
-      });
-    })
-    .catch((err) => {
-      console.log('sss', err);
-      dispatch({
-        type: types.ADMIN_OUTPUT_YEAR_FAILURE,
-        outputYearData: [],
+        type: types.ADMIN_OUTPUT_CHART_FAILURE,
+        outputData: [],
       });
     });
   }
@@ -341,7 +217,7 @@ export const doRequestAlarmHour = (passProps) => {
   const lineName =  passProps.lineName;
   const equipmentName = passProps.equipmentName;
   const timeZone = passProps.timeZone;
-  const actionType = passProps.actionType;
+  const timeUnit = passProps.actionType;
   const date = passProps.date;
 
   return (dispatch) => {
@@ -355,7 +231,7 @@ export const doRequestAlarmHour = (passProps) => {
       `&lineName="${lineName}"`+
       `&equipmentName=${equipmentName}`+
       `&timeZone="${timeZone}"`+
-      `&actionType="${actionType}"`+
+      `&timeUnit="${timeUnit}"`+
       `&date="${date}"`
     )
     .then(checkStatus)
@@ -383,7 +259,7 @@ export const doRequestAlarmDate = (passProps) => {
   const lineName =  passProps.lineName;
   const equipmentName = passProps.equipmentName;
   const timeZone = passProps.timeZone;
-  const actionType = passProps.actionType;
+  const timeUnit = passProps.actionType;
   const startDate = passProps.startTime;
   const endDate = passProps.endTime;
 
@@ -398,7 +274,7 @@ export const doRequestAlarmDate = (passProps) => {
       `&lineName="${lineName}"`+
       `&equipmentName=${equipmentName}`+
       `&timeZone="${timeZone}"`+
-      `&actionType="${actionType}"`+
+      `&timeUnit="${timeUnit}"`+
       `&startDate="${startDate}"`+
       `&endDate="${endDate}"`
     )
@@ -427,7 +303,7 @@ export const doRequestAlarmMonth = (passProps) => {
   const lineName =  passProps.lineName;
   const equipmentName = passProps.equipmentName;
   const timeZone = passProps.timeZone;
-  const actionType = passProps.actionType;
+  const timeUnit = passProps.actionType;
   const startDate = passProps.startTime;
   const endDate = passProps.endTime;
 
@@ -442,7 +318,7 @@ export const doRequestAlarmMonth = (passProps) => {
       `&lineName="${lineName}"`+
       `&equipmentName=${equipmentName}`+
       `&timeZone="${timeZone}"`+
-      `&actionType="${actionType}"`+
+      `&timeUnit="${timeUnit}"`+
       `&startDate="${startDate}"`+
       `&endDate="${endDate}"`
     )
@@ -471,7 +347,7 @@ export const doRequestAlarmDuration = (passProps) => {
   const lineName =  passProps.lineName;
   const equipmentName = passProps.equipmentName;
   const timeZone = passProps.timeZone;
-  const actionType = passProps.actionType;
+  const timeUnit = passProps.actionType;
   const startDate = passProps.startTime;
   const endDate = passProps.endTime;
 
@@ -486,7 +362,7 @@ export const doRequestAlarmDuration = (passProps) => {
       `&lineName="${lineName}"`+
       `&equipmentName=${equipmentName}`+
       `&timeZone="${timeZone}"`+
-      `&actionType="${actionType}"`+
+      `&timeUnit="${timeUnit}"`+
       `&startDate="${startDate}"`+
       `&endDate="${endDate}"`
     )
