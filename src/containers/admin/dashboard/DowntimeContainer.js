@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Row, Col, Card, DatePicker, Button, Spin, Dropdown, Menu, Icon } from 'antd';
+import { Row, Col, Card, DatePicker, Button, Dropdown, Menu, Icon, Spin, Select, Table } from 'antd';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import G2 from 'g2';
@@ -7,15 +7,13 @@ import createG2 from 'g2-react';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 
-// import { downtimeColumns } from './../../../constants/tableColumns';
+import { downtimeColumns } from './../../../constants/tableColumns';
 import {
-  doRequestAlarmHour,
-  doRequestAlarmDate,
-  doRequestAlarmMonth,
-  doRequestAlarmDuration,
+  doRequestAlarm,
 } from '../../../actions';
 
 const { MonthPicker } = DatePicker;
+const Option = Select.Option;
 
 const dateFormat = 'YYYY-MM-DD';
 const monthFormat = 'YYYY-MM';
@@ -236,36 +234,37 @@ class DowntimeContainer extends Component {
     );
   }
   render() {
-    const { alarmHourData, alarmDateData, alarmMonthData, alarmDurationData, type } = this.props;
+    const { alarmData, type } = this.props;
+    const { filterValue } = this.state;
+
     const actionTypeSplit = type.split('_');
-    let hourRequestSpin, dateRequestSpin, monthRequestSpin, durationRequestSpin;
-    if ( actionTypeSplit[3] === 'REQUEST') {
-      hourRequestSpin = actionTypeSplit[2] === 'HOUR' || false;
-      dateRequestSpin = actionTypeSplit[2] === 'DATE' || false;
-      monthRequestSpin = actionTypeSplit[2] === 'MONTH' || false;
-      durationRequestSpin = actionTypeSplit[2] === 'DURATION' || false;
-    }
+    const requestSpin = actionTypeSplit[3] === 'REQUEST' || false;
     return (
       <div id="downtime-container">
-        <Row>
-          <Col span={12} className="col chartRow gutter-row">
+        <Row gutter={10}>
+          <Col span={24} className="col chartRow">
             <Card
               className="gutter-box"
               title={
                 <Row>
                   <Col span={12}>
                     <h3 className="leftWord">
-                      Hour
+                    { filterValue.charAt(0).toUpperCase() + filterValue.slice(1) }
                     </h3>
                   </Col>
                   <Col span={12} className="rightWord">
-                    { this.renderPicker('hour') }
+                    <Select defaultValue="hour" style={{ width: '100px' }} onChange={this.onFilterChange}>
+                      <Option value="hour">Hour</Option>
+                      <Option value="date">Date</Option>
+                      <Option value="month">Month</Option>
+                    </Select>
+                    { this.renderPicker() }
                   </Col>
                 </Row>
               }
             >
-              { alarmHourData !== undefined && !hourRequestSpin
-                ? this.generateChart(alarmHourData, 'hour', type)
+              { alarmData !== undefined && !requestSpin
+                ? this.generateChart(alarmData, type)
                 : <div className="defaultChartDiv">
                     <div className="emptyDiv" />
                     <Spin />
@@ -273,90 +272,15 @@ class DowntimeContainer extends Component {
               }
             </Card>
           </Col>
-          <Col span={12} className="col chartRow gutter-row">
-            <Card
-              className="gutter-box"
-              title={
-                <Row>
-                  <Col span={12}>
-                    <h3 className="leftWord">
-                      Month
-                    </h3>
-                  </Col>
-                  <Col span={12} className="rightWord">
-                    { this.renderPicker('month') }
-                  </Col>
-                </Row>
-              }
-            >
-              { alarmMonthData !== undefined && !monthRequestSpin
-                ? this.generateChart(alarmMonthData, 'month', type)
-                  : <div className="defaultChartDiv">
-                    <div className="emptyDiv" />
-                    <Spin />
-                  </div>
-              }
-            </Card>
-          </Col>
-          <Col span={24} className="chartPadding" />
-          <Col span={12} className="col chartRow gutter-row">
-            <Card
-              className="gutter-box"
-              title={
-                <Row>
-                  <Col span={12}>
-                    <h3 className="leftWord">
-                      Date
-                    </h3>
-                  </Col>
-                  <Col span={12} className="rightWord">
-                    { this.renderPicker('date') }
-                  </Col>
-                </Row>
-              }
-            >
-              { alarmDateData !== undefined && !dateRequestSpin
-                ? this.generateChart(alarmDateData, 'date', type)
-                : <div className="defaultChartDiv">
-                    <div className="emptyDiv" />
-                    <Spin />
-                  </div>
-              }
-            </Card>
-          </Col>
-          <Col span={12} className="col chartRow gutter-row">
-            <Card
-              className="gutter-box"
-              title={
-                <Row>
-                  <Col span={12}>
-                    <h3 className="leftWord">
-                      Past 7 days
-                    </h3>
-                  </Col>
-                  <Col span={12} className="rightWord">
-                    { this.renderPicker('duration') }
-                  </Col>
-                </Row>
-              }
-            >
-              { alarmDurationData !== undefined && !durationRequestSpin
-                ? this.generateChart(alarmDurationData, 'duration', type)
-                : <div className="defaultChartDiv">
-                    <div className="emptyDiv" />
-                    <Spin />
-                  </div>
-              }
-            </Card>
-          </Col>
-          {/* <Col span={24} className="col">
-             <Card>
+          <Col span={24} className="col">
+            <Card>
               <Table
-                dataSource={this.generateTableDataSource(alarmChartData)}
-                columns={alarmColumns}
+                dataSource={this.generateTableDataSource(alarmData)}
+                columns={downtimeColumns}
+                size="small"
               />
             </Card>
-          </Col> */}
+          </Col>
         </Row>
       </div>
     );
@@ -365,11 +289,8 @@ class DowntimeContainer extends Component {
 
 DowntimeContainer.propTypes = {
   params: PropTypes.object,
-  doRequestAlarmHour: PropTypes.func,
-  doRequestAlarmDate: PropTypes.func,
-  doRequestAlarmMonth: PropTypes.func,
-  doRequestAlarmDuration: PropTypes.func,
-  alarmChartData: PropTypes.array,
+  doRequestAlarm: PropTypes.func,
+  alarmData: PropTypes.array,
 };
 
 const mapStateToProps = (state) => {
@@ -381,9 +302,6 @@ const mapStateToProps = (state) => {
 export default connect(
    mapStateToProps,
   {
-    doRequestAlarmHour,
-    doRequestAlarmDate,
-    doRequestAlarmMonth,
-    doRequestAlarmDuration,
+    doRequestAlarm,
   },
 )(DowntimeContainer);

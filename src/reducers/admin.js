@@ -5,30 +5,9 @@ const initialState = {
 
 const admin = (state = initialState, action) => {
   switch (action.type) {
-    case types.ADMIN_ALARM_HOUR_REQUEST:
-    case types.ADMIN_ALARM_HOUR_SUCCESS:
-    case types.ADMIN_ALARM_HOUR_FAILURE:
-      return {
-        ...state,
-        ...action,
-      }
-    case types.ADMIN_ALARM_DATE_REQUEST:
-    case types.ADMIN_ALARM_DATE_SUCCESS:
-    case types.ADMIN_ALARM_DATE_FAILURE:
-      return {
-        ...state,
-        ...action,
-      }
-    case types.ADMIN_ALARM_MONTH_REQUEST:
-    case types.ADMIN_ALARM_MONTH_SUCCESS:
-    case types.ADMIN_ALARM_MONTH_FAILURE:
-       return {
-        ...state,
-        ...action,
-      }
-    case types.ADMIN_ALARM_DURATION_REQUEST:
-    case types.ADMIN_ALARM_DURATION_SUCCESS:
-    case types.ADMIN_ALARM_DURATION_FAILURE:
+    case types.ADMIN_ALARM_CHART_REQUEST:
+    case types.ADMIN_ALARM_CHART_SUCCESS:
+    case types.ADMIN_ALARM_CHART_FAILURE:
       return {
         ...state,
         ...action,

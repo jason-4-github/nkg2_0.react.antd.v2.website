@@ -210,7 +210,7 @@ export const doRequestOutput = (passProps) => {
   }
 }
 
-export const doRequestAlarmHour = (passProps) => {
+export const doRequestAlarm = (passProps) => {
   const countryName = passProps.countryName;
   const factoryName = passProps.factoryName;
   const plantName = passProps.plantName;
@@ -219,166 +219,57 @@ export const doRequestAlarmHour = (passProps) => {
   const timeZone = passProps.timeZone;
   const timeUnit = passProps.actionType;
   const date = passProps.date;
-
-  return (dispatch) => {
-    dispatch({
-      type: types.ADMIN_ALARM_HOUR_REQUEST,
-    })
-    fetch(`${serverConfig.url}/v0/get/alarm`+
-      `?countryName="${countryName}"`+
-      `&factoryName="${factoryName}"`+
-      `&plantName="${plantName}"`+
-      `&lineName="${lineName}"`+
-      `&equipmentName=${equipmentName}`+
-      `&timeZone="${timeZone}"`+
-      `&timeUnit="${timeUnit}"`+
-      `&date="${date}"`
-    )
-    .then(checkStatus)
-    .then(parseJSON)
-    .then((data) => {
-      dispatch({
-        type: types.ADMIN_ALARM_HOUR_SUCCESS,
-        alarmHourData: data.payload,
-      });
-    })
-    .catch((err) => {
-      console.log('sss', err);
-      dispatch({
-        type: types.ADMIN_ALARM_HOUR_FAILURE,
-        alarmHourData: [],
-      });
-    });
-  }
-}
-
-export const doRequestAlarmDate = (passProps) => {
-  const countryName = passProps.countryName;
-  const factoryName = passProps.factoryName;
-  const plantName = passProps.plantName;
-  const lineName =  passProps.lineName;
-  const equipmentName = passProps.equipmentName;
-  const timeZone = passProps.timeZone;
-  const timeUnit = passProps.actionType;
   const startDate = passProps.startTime;
   const endDate = passProps.endTime;
 
+  let fetchUrl = `${serverConfig.url}/v0/get/alarm`+
+    `?countryName="${countryName}"`+
+    `&factoryName="${factoryName}"`+
+    `&plantName="${plantName}"`+
+    `&lineName="${lineName}"`+
+    `&equipmentName=${equipmentName}`+
+    `&timeZone="${timeZone}"`+
+    `&timeUnit="${timeUnit}"`;
+  if (timeUnit === 'hour') fetchUrl += `&date="${date}"`;
+  else fetchUrl +=`&startDate="${startDate}"&endDate="${endDate}"`
+
   return (dispatch) => {
     dispatch({
-      type: types.ADMIN_ALARM_DATE_REQUEST,
+      type: types.ADMIN_ALARM_CHART_REQUEST,
     })
-    fetch(`${serverConfig.url}/v0/get/alarm`+
-      `?countryName="${countryName}"`+
-      `&factoryName="${factoryName}"`+
-      `&plantName="${plantName}"`+
-      `&lineName="${lineName}"`+
-      `&equipmentName=${equipmentName}`+
-      `&timeZone="${timeZone}"`+
-      `&timeUnit="${timeUnit}"`+
-      `&startDate="${startDate}"`+
-      `&endDate="${endDate}"`
-    )
+    fetch(fetchUrl)
     .then(checkStatus)
     .then(parseJSON)
     .then((data) => {
+
+      // desperate the empty data by count
+      let sortedData = [];
+      _.map(data.payload.status, (value, key) => {
+        if (value.totalAlarmTime) {
+        let rebuildObj = {};
+        _.map(value, (innerValue, innerKey) => {
+            if (innerKey === 'description') rebuildObj.description = innerValue.description.en;
+            else rebuildObj[innerKey] = innerValue;
+          });
+          rebuildObj.alarmCode = key;
+          rebuildObj.equipmentName = data.payload.equipmentName;
+          sortedData.push(rebuildObj);
+        }
+      });
+
+      // sort data from higher to lower
+      sortedData = _.sortBy(sortedData, [(data) => { return data.count }]).reverse();
+
       dispatch({
-        type: types.ADMIN_ALARM_DATE_SUCCESS,
-        alarmDateData: data.payload,
+        type: types.ADMIN_ALARM_CHART_SUCCESS,
+        alarmData: sortedData,
       });
     })
     .catch((err) => {
       console.log('sss', err);
       dispatch({
-        type: types.ADMIN_ALARM_DATE_FAILURE,
-        alarmDateData: [],
-      });
-    });
-  }
-}
-
-export const doRequestAlarmMonth = (passProps) => {
-  const countryName = passProps.countryName;
-  const factoryName = passProps.factoryName;
-  const plantName = passProps.plantName;
-  const lineName =  passProps.lineName;
-  const equipmentName = passProps.equipmentName;
-  const timeZone = passProps.timeZone;
-  const timeUnit = passProps.actionType;
-  const startDate = passProps.startTime;
-  const endDate = passProps.endTime;
-
-  return (dispatch) => {
-    dispatch({
-      type: types.ADMIN_ALARM_MONTH_REQUEST,
-    })
-    fetch(`${serverConfig.url}/v0/get/alarm`+
-      `?countryName="${countryName}"`+
-      `&factoryName="${factoryName}"`+
-      `&plantName="${plantName}"`+
-      `&lineName="${lineName}"`+
-      `&equipmentName=${equipmentName}`+
-      `&timeZone="${timeZone}"`+
-      `&timeUnit="${timeUnit}"`+
-      `&startDate="${startDate}"`+
-      `&endDate="${endDate}"`
-    )
-    .then(checkStatus)
-    .then(parseJSON)
-    .then((data) => {
-      dispatch({
-        type: types.ADMIN_ALARM_MONTH_SUCCESS,
-        alarmMonthData: data.payload,
-      });
-    })
-    .catch((err) => {
-      console.log('sss', err);
-      dispatch({
-        type: types.ADMIN_ALARM_MONTH_FAILURE,
-        alarmMonthData: [],
-      });
-    });
-  }
-}
-
-export const doRequestAlarmDuration = (passProps) => {
-  const countryName = passProps.countryName;
-  const factoryName = passProps.factoryName;
-  const plantName = passProps.plantName;
-  const lineName =  passProps.lineName;
-  const equipmentName = passProps.equipmentName;
-  const timeZone = passProps.timeZone;
-  const timeUnit = passProps.actionType;
-  const startDate = passProps.startTime;
-  const endDate = passProps.endTime;
-
-  return (dispatch) => {
-    dispatch({
-      type: types.ADMIN_ALARM_DURATION_REQUEST,
-    })
-    fetch(`${serverConfig.url}/v0/get/alarm`+
-      `?countryName="${countryName}"`+
-      `&factoryName="${factoryName}"`+
-      `&plantName="${plantName}"`+
-      `&lineName="${lineName}"`+
-      `&equipmentName=${equipmentName}`+
-      `&timeZone="${timeZone}"`+
-      `&timeUnit="${timeUnit}"`+
-      `&startDate="${startDate}"`+
-      `&endDate="${endDate}"`
-    )
-    .then(checkStatus)
-    .then(parseJSON)
-    .then((data) => {
-      dispatch({
-        type: types.ADMIN_ALARM_DURATION_SUCCESS,
-        alarmDurationData: data.payload,
-      });
-    })
-    .catch((err) => {
-      console.log('sss', err);
-      dispatch({
-        type: types.ADMIN_ALARM_DURATION_FAILURE,
-        alarmDurationData: [],
+        type: types.ADMIN_ALARM_CHART_FAILURE,
+        alarmData: [],
       });
     });
   }

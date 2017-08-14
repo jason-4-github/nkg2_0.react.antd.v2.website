@@ -56,6 +56,10 @@ export const outputColumns = [
     dataIndex: 'output',
     key: 'output',
   }, {
+    title: 'Output NG',
+    dataIndex: 'outputNG',
+    key: 'outputNG',
+  }, {
     title: 'Yield Rate',
     dataIndex: 'yieldRate',
     key: 'yieldRate',
