@@ -44,7 +44,6 @@ class PlantMapContainer extends Component {
     this.state = {
       isRender: false,
     };
-    console.log(styleJson);
   }
   componentWillMount() {
     /* eslint-disable no-shadow */

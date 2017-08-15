@@ -177,7 +177,6 @@ class FactoryMapContainer extends Component {
     const emptyDivHeight = (window.innerHeight < factoryBackgroundImageHeight)
       ? 0
       : ((window.innerHeight) - factoryBackgroundImageHeight) / 2;
-      console.log(444, this.state);
     const { imageUrl } = this.state;
     return (
       <div id="factory-map-container">

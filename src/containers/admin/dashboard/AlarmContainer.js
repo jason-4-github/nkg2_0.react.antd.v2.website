@@ -84,6 +84,7 @@ class AlarmContainer extends Component {
   // process data for table
   generateTableDataSource(data) {
     if (!data) return;
+    // TODO(jasonHsu): time need to modify if total time > 24 hours
     const arr = [];
     let keyCount = 1;
     _.map(data, (d, idx) => {
@@ -218,8 +219,6 @@ class AlarmContainer extends Component {
 
     const actionTypeSplit = type.split('_');
     const requestSpin = actionTypeSplit[3] === 'REQUEST' || false;
-
-    console.log('data: ', alarmData);
 
     return (
       <div id="alarm-container">

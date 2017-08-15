@@ -8,9 +8,7 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 
 import { downtimeColumns } from './../../../constants/tableColumns';
-import {
-  doRequestAlarm,
-} from '../../../actions';
+import { doRequestAlarm } from '../../../actions';
 
 const { MonthPicker } = DatePicker;
 const Option = Select.Option;
@@ -23,36 +21,37 @@ class DowntimeContainer extends Component {
     super(props);
 
     this.state = {
-      filterValue: 'date',
-      datePickerValue: moment().format('YYYY-MM-DD'),
-      isSearchButtonDisable: true,
-      yearValue: moment().format('YYYY'),
+      filterValue: 'hour',
+      monthDropdownValue: moment().format('YYYY'),
+      chartData: [],
     };
 
     this.onDatePickerChange = this.onDatePickerChange.bind(this);
     this.doSearch = this.doSearch.bind(this);
-    this.onDurationPickerChange = this.onDurationPickerChange.bind(this);
+    this.renderPicker = this.renderPicker.bind(this);
     this.handleMonthDropdown = this.handleMonthDropdown.bind(this);
+    this.onFilterChange = this.onFilterChange.bind(this);
+    this.handleChartClick = this.handleChartClick.bind(this);
+    this.generatePieChart = this.generatePieChart.bind(this);
   }
   componentDidMount() {
     const date = moment().format('YYYY-MM-DD');
-    this.doSearch('all', date);
+    this.doSearch('hour', date);
   }
+
+  onFilterChange(e) {
+    const filterDate = moment().format(e === 'month' ? 'YYYY' : 'YYYY-MM-DD');
+
+    this.doSearch(e, filterDate);
+    this.setState({ filterValue: e });
+  }
+  // do the date or hour action
   onDatePickerChange(date, dateString) {
-    const isMonth = dateString.split('-').length === 2 || false;
-    this.doSearch( isMonth ? 'date' : 'hour', dateString);
-  }
-  onDurationPickerChange(date, dateString) {
-    this.doSearch( 'duration', dateString);
+    this.doSearch(this.state.filterValue, dateString);
   }
   doSearch(type, onChangeValue) {
     /* eslint-disable no-shadow */
-    const {
-      doRequestAlarmHour,
-      doRequestAlarmDate,
-      doRequestAlarmMonth,
-      doRequestAlarmDuration,
-    } = this.props;
+    const { doRequestAlarm } = this.props;
     /* eslint-enable no-shadow */
 
     const countryName = this.props.params.country;
@@ -63,8 +62,8 @@ class DowntimeContainer extends Component {
     const month = type !== 'month' ? onChangeValue.split('-')[1] : onChangeValue;
     const lastDay = moment(`${year}-${month}`, "YYYY-MM").daysInMonth();
     const date = onChangeValue
-    let startTime = type === 'month' ? `${year}-01-01` : `${year}-${month}-01`;
-    let endTime = type === 'month' ? `${year}-12-31` : `${year}-${month}-${lastDay}`;
+    const startTime = type === 'month' ? `${year}-01-01` : `${year}-${month}-01`;
+    const endTime = type === 'month' ? `${year}-12-31` : `${year}-${month}-${lastDay}`;
 
     // (XXX): need modify more common sense
     const equipmentName = 'ict';
@@ -80,58 +79,116 @@ class DowntimeContainer extends Component {
       date,
       startTime,
       endTime,
+      actionType: type,
     }
 
-    // the function config the different actionType
-    const defaultObjsFunc = (type, defaultobjs) => {
-      defaultobjs.actionType = type;
-      if (type === 'duration') {
-        defaultobjs.endTime = date;
-        defaultobjs.startTime = moment(date, 'YYYY-MM-DD').add(-6, 'days').format('YYYY-MM-DD');
-      }
-      return defaultobjs;
-    }
-
-    // call action with type
-    if (type === 'hour') doRequestAlarmHour(defaultObjsFunc('hour', defaultobjs));
-    else if (type ==='date') doRequestAlarmDate(defaultObjsFunc('date', defaultobjs));
-    else if (type === 'month') doRequestAlarmMonth(defaultObjsFunc('month', defaultobjs));
-    else if (type === 'duration') doRequestAlarmDuration(defaultObjsFunc('duration', defaultobjs));
-    else {
-      doRequestAlarmHour(defaultObjsFunc('hour', defaultobjs));
-      doRequestAlarmDate(defaultObjsFunc('date', defaultobjs));
-      doRequestAlarmMonth(defaultObjsFunc('month', defaultobjs));
-      doRequestAlarmDuration(defaultObjsFunc('duration', defaultobjs));
-    }
+    doRequestAlarm(defaultobjs);
   }
   // process data for table
   generateTableDataSource(data) {
+    if (!data) return;
     const arr = [];
+    let keyCount = 1;
     _.map(data, (d, idx) => {
-      const downtimeHour = Math.trunc(moment.duration(d.AlarmTime).asHours());
-      const downtimeMMSS = moment().startOf('day').seconds(d.AlarmTime / 1000).format('mm:ss');
-      arr.push({
-        key: idx,
-        no: d.MachineNo,
-        machineName: d.MachineName,
-        downTime: `${downtimeHour}:${downtimeMMSS}`,
-      });
+      if (d.totalAlarmTime) {
+        arr.push({
+          no: keyCount,
+          machineName: d.equipmentName,
+          downTime: moment().startOf('day').seconds(d.totalAlarmTime/1000).format('HH:mm:ss'),
+        });
+        keyCount += 1;
+      }
     });
 
     return arr;
   }
-  generateChart(data, type, actionType) {
-    if (!data || _.isEmpty(data)) { return []; }
+  generateChart(data, actionType) {
+    if (!data) { return []; }
 
     // determine the animate active or not
     const actionTypeSplit = actionType.split('_');
-    const animate = actionTypeSplit[3] === 'REQUEST' ?  '' : actionTypeSplit[2].toLowerCase();
+    const animate = actionTypeSplit[2] === 'REQUEST' ?  '' : actionTypeSplit[1].toLowerCase();
 
     const arr = [];
-    _.map(data.status, (d, idx) => {
+    let index = 0;
+    _.map(data, (d, key) => {
+      if (d.totalAlarmTime > 0) {
+        index += 1;
+        arr.push({
+          times: index + '',
+          machineName: d.equipmentName,
+          alarmTime: d.totalAlarmTime / 1000,
+          idleTime: 0,
+          alarmCount: d.count,
+          alarmCode: d.alarmCode,
+        });
+      }
+    });
+
+    const Frame = G2.Frame;
+    let frame = new Frame(arr);
+    // TODO(Jason Hsu): axis name need to modify
+    frame = Frame.combinColumns(frame, ['alarmTime', 'idleTime', 'machineName'], 'count', 'type', ['alarmCode', 'alarmCount']);
+
+    const Chart = createG2((chart) => {
+      chart.col('count', { alias: 'Time (s)', min: 0 });
+      chart.col('alarmCount', { alias: 'Count', min: 0 });
+      // 去除 X 轴标题
+      chart.axis('alarmCode', {
+        title: null,
+      });
+      // 不显示图例
+      chart.legend(false);
+      // 绘制层叠柱状图
+      chart.intervalStack()
+        .position('alarmCode*count')
+        .color('type', ['#348cd1', '#43b5d8']);
+      // 绘制曲线图
+      chart.line()
+        .position('alarmCode*alarmCount')
+        .color('#5ed470')
+        .size(2)
+        .shape('smooth');
+      // 绘制点图
+      chart.point()
+        .position('alarmCode*alarmCount')
+        .color('#5ed470');
+      // control the animate
+      if(animate === '')chart.animate(false);
+      chart.render();
+    });
+
+    return (
+      <Chart
+        data={frame}
+        width={450}
+        height={250}
+        forceFit
+      />
+    );
+  }
+  handleChartClick(data) {
+    this.setState({
+      chartData: data,
+    })
+  }
+  generatePieChart(data, handleChartClick) {
+    // if (!data) { return []; }
+
+    const data2 = [
+      {description: "Robot Vacuum2 Error", totalAlarmTime: 446233417, count: 16, alarmCode: "8010", equipmentName: "ict2"},
+      {description: "Robot Vacuum2 Error", totalAlarmTime: 446233417, count: 16, alarmCode: "8010", equipmentName: "ict"},
+      {description: "ICT-1 Feedback Result Timeout", totalAlarmTime: 140451135, count: 3, alarmCode: "6009", equipmentName: "ict"},
+      {description: "Robot Command Error", totalAlarmTime: 7930714, count: 1, alarmCode: "8031", equipmentName: "ict"},
+      {description: "Robot Vacuum1 Error", totalAlarmTime: 33887713, count: 1, alarmCode: "8009", equipmentName: "ict"}
+    ];
+
+    const arr = [];
+    _.map(data2, (d, idx) => {
       if (d.totalAlarmTime > 0) {
         arr.push({
           name: idx,
+          equipmentName: d.equipmentName,
           value: d.totalAlarmTime / 1000,
         });
       }
@@ -141,9 +198,9 @@ class DowntimeContainer extends Component {
       const Stat = G2.Stat;
       // 重要：绘制饼图时，必须声明 theta 坐标系
       chart.coord('theta', {
-        radius: 0.6, // 设置饼图的大小
+        radius: 0.8, // 设置饼图的大小
       });
-      chart.legend('name', {
+      chart.legend('equipmentName', {
         position: 'bottom',
         itemWrap: true,
       });
@@ -155,14 +212,27 @@ class DowntimeContainer extends Component {
       });
       chart.intervalStack()
         .position(Stat.summary.percent('value'))
-        .color('name')
-        .label('name*..percent', (name, percent) => {
+        .color('equipmentName')
+        .label('equipmentName*..percent', (name, percent) => {
           const per = (percent * 100).toFixed(2);
           return `[${name}]: ${per}%`;
         });
-      // control the animate
-      if(animate !== type)chart.animate(false);
+
       chart.render();
+
+      chart.on('plotclick',function(ev){
+        var tmpData = ev.data;
+        if (tmpData) {
+          const tmpEquipmentName = tmpData._origin.equipmentName;
+          const tmpArrs = [];
+          _.map(data2, (value) => {
+            if (value.equipmentName === tmpEquipmentName) tmpArrs.push(value);
+          });
+
+          handleChartClick(tmpArrs);
+        }
+      });
+
       // 设置默认选中
       const geom = chart.getGeoms()[0]; // 获取所有的图形
       const items = geom.getData(); // 获取图形对应的数据
@@ -180,12 +250,13 @@ class DowntimeContainer extends Component {
   }
   handleMonthDropdown(e) {
     const monthOptions = ['2016', '2017'];
-    this.doSearch('month', monthOptions[e.key - 1]);
-    this.setState({ yearValue: monthOptions[e.key - 1] });
+    const onChangeValue = monthOptions[e.key - 1];
+    this.doSearch('month', onChangeValue);
+    this.setState({ monthDropdownValue: onChangeValue });
   }
-  renderPicker(type) {
+  renderPicker() {
     let now;
-    if (type === 'month') {
+    if (this.state.filterValue === 'month') {
       now = moment().format('YYYY');
       const menu = (
         <Menu onSelect={this.handleMonthDropdown}>
@@ -196,12 +267,12 @@ class DowntimeContainer extends Component {
       return (
         <Dropdown overlay={menu} trigger={['click']}>
           <Button>
-            { this.state.yearValue } <Icon type="down" />
+            { this.state.monthDropdownValue } <Icon type="down" />
           </Button>
         </Dropdown>
       );
     }
-    if (type === 'date') {
+    if (this.state.filterValue === 'date') {
       now = moment().format('YYYY/MM');
       return (
         <MonthPicker
@@ -210,17 +281,6 @@ class DowntimeContainer extends Component {
           className="info-margin"
           defaultValue={moment(now, monthFormat)}
         />
-      );
-    }
-    if (type === 'duration') {
-      now = moment().format('YYYY/MM/DD');
-      return (
-        <DatePicker
-        onChange={this.onDurationPickerChange}
-        format={dateFormat}
-        className="info-margin"
-        defaultValue={moment(now, dateFormat)}
-      />
       );
     }
     now = moment().format('YYYY/MM/DD');
@@ -235,53 +295,60 @@ class DowntimeContainer extends Component {
   }
   render() {
     const { alarmData, type } = this.props;
-    const { filterValue } = this.state;
+    const { filterValue, chartData } = this.state;
 
     const actionTypeSplit = type.split('_');
     const requestSpin = actionTypeSplit[3] === 'REQUEST' || false;
+
     return (
-      <div id="downtime-container">
+      <div id="alarm-container">
         <Row gutter={10}>
-          <Col span={24} className="col chartRow">
-            <Card
-              className="gutter-box"
-              title={
-                <Row>
-                  <Col span={12}>
-                    <h3 className="leftWord">
-                    { filterValue.charAt(0).toUpperCase() + filterValue.slice(1) }
-                    </h3>
-                  </Col>
-                  <Col span={12} className="rightWord">
-                    <Select defaultValue="hour" style={{ width: '100px' }} onChange={this.onFilterChange}>
-                      <Option value="hour">Hour</Option>
-                      <Option value="date">Date</Option>
-                      <Option value="month">Month</Option>
-                    </Select>
-                    { this.renderPicker() }
-                  </Col>
-                </Row>
-              }
-            >
-              { alarmData !== undefined && !requestSpin
-                ? this.generateChart(alarmData, type)
-                : <div className="defaultChartDiv">
-                    <div className="emptyDiv" />
-                    <Spin />
-                  </div>
-              }
-            </Card>
+        <Col span={24} className="col chartRow">
+          <Card
+            className="gutter-box"
+            title={
+              <Row>
+                <Col span={12}>
+                  <h3 className="leftWord">
+                  { filterValue.charAt(0).toUpperCase() + filterValue.slice(1) }
+                  </h3>
+                </Col>
+                <Col span={12} className="rightWord">
+                  <Select defaultValue="hour" style={{ width: '100px' }} onChange={this.onFilterChange}>
+                    <Option value="hour">Hour</Option>
+                    <Option value="date">Date</Option>
+                    <Option value="month">Month</Option>
+                  </Select>
+                  { this.renderPicker() }
+                </Col>
+              </Row>
+            }
+          >
+          <Col span={12}>
+            { this.generatePieChart(alarmData, this.handleChartClick) }
           </Col>
-          <Col span={24} className="col">
-            <Card>
-              <Table
-                dataSource={this.generateTableDataSource(alarmData)}
-                columns={downtimeColumns}
-                size="small"
-              />
-            </Card>
+          <Col span={12}>
+            { this.generateChart(chartData, type) }
           </Col>
-        </Row>
+            {/* { alarmData !== undefined && !requestSpin
+              ? this.generateChart(alarmData, type)
+              : <div className="defaultChartDiv">
+                  <div className="emptyDiv" />
+                  <Spin />
+                </div>
+            } */}
+          </Card>
+        </Col>
+        <Col span={24} className="col">
+          <Card>
+            <Table
+              dataSource={this.generateTableDataSource(alarmData)}
+              columns={downtimeColumns}
+              size="small"
+            />
+           </Card>
+        </Col>
+      </Row>
       </div>
     );
   }
@@ -300,8 +367,6 @@ const mapStateToProps = (state) => {
 };
 
 export default connect(
-   mapStateToProps,
-  {
-    doRequestAlarm,
-  },
+  mapStateToProps,
+  { doRequestAlarm },
 )(DowntimeContainer);

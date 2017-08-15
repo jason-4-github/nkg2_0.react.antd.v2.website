@@ -121,7 +121,6 @@ class WorldMapContainer extends Component {
     });
   }
   render() {
-    console.log(this.state);
     return (
       <div id="world-map-container">
         { this.state.isSpin

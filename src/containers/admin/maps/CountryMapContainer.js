@@ -52,7 +52,6 @@ class CountryMapContainer extends Component {
 
   }
   showMap(worldMapData) {
-    console.log('cccc', this.props.children);
     const countryName = this.props.params.country;
 
     const Stat = G2.Stat;

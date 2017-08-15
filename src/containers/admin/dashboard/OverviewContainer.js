@@ -61,9 +61,10 @@ class OverviewContainer extends Component {
 
     // information config set up
     const informationTableData = [];
-    const outputOKCount = isConnect
+    let outputOKCount = isConnect
       ? data.okQuantity
       : <Icon type="close-circle-o" style={{ color: 'white' }} />;
+    if (!outputOKCount) outputOKCount = 0;
     const time = [moment().format('YYYY-MM-DD hh:mm:ss')];
     const informationTitle = ['Line Name', 'Connection', 'Time', 'Output'];
     const informationIcon = ['idcard', 'share-alt', 'clock-circle-o', 'exception'];
@@ -93,7 +94,7 @@ class OverviewContainer extends Component {
     // const { wdRealTimePosition, seagateRealTimePositioin } = this.props;
     // if (line === 'P4') return seagateRealTimePositioin([], line);
     if (line === 'CELL3') return wdRealTimePosition([], line);
-    if (line === 'P6') return seagateRealTimePositioin([], line);
+    // if (line === 'P6') return seagateRealTimePositioin([], line);
     // if (typeof realTimeData === 'undefined') return '';
 
     const statusColors = ['white', 'yellow', 'green', 'red'];
@@ -116,6 +117,25 @@ class OverviewContainer extends Component {
       ? ['routercv', 'buffercv', 'shiftcv', 'trcva', 'trcvb', 'icta', 'ictb']
       : ['shift', 'cv', 'ctcv', 'buffer', 'ct'];
     const machineDataCount = [7, 19, 20, 17, 20];
+
+    // ***************************************************************
+    // special case for wd lines on P6
+    // 1: running 2: idle 3; alarm
+
+    // XXX(JasonHsu): need to modify
+    const robotName = ['ict-1', 'robot-1', 'ict-2', 'robot-2', 'router-1', 'robot-3'];
+    const lightColorClass = ['greenLight', 'yellowLight', 'redLight'];
+    const p6Arrs = [];
+    if(line === 'P6') {
+      _.map(robotName, (value, key) => {
+        _.map(realTimeData, (innerValue, innerKey) => {
+          if (value === innerKey) {
+            p6Arrs.push(lightColorClass[innerValue.machineStatus - 1]);
+          }
+        });
+      });
+      return seagateRealTimePositioin(p6Arrs, line);
+    }
 
     // ***************************************************************
     // special case for wd lines on G7 / G8 / G9

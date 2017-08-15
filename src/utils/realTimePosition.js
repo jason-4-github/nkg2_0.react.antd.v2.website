@@ -1325,43 +1325,69 @@ export const seagateRealTimePositioin = (divs, line) => {
       <div>
         <img
           alt=""
-          width="70%"
-          height="70%"
+          width="825px"
+          height="464px"
           src="/images/p6Layout.png"
         />
         <div
-          id="ict1"
+          className={divs[0] || 'noLight'}
           style={{
-            position: 'absolute',
-            width: '63px',
-            backgroundColor: 'yellow',
-            border: 'groove',
-            color: 'black',
-            top: '100px',
-            left: '700px',
-            fontSize: '14px',
-            zIndex: '5',
-            textAlign: 'center',
+            top: '140px',
+            left: '740px',
+            borderRadius: '25px',
           }}
         >
           ICT1
         </div>
         <div
-          id="ict2"
+          className={divs[1] || 'noLight'}
           style={{
-            position: 'absolute',
-            width: '63px',
-            backgroundColor: 'yellow',
-            border: 'groove',
-            color: 'black',
-            top: '400px',
-            left: '657px',
-            fontSize: '14px',
-            zIndex: '5',
-            textAlign: 'center',
+            top: '210px',
+            left: '625px',
+            borderRadius: '25px',
+          }}
+        >
+          robot1
+        </div>
+        <div
+          className={divs[2] || 'noLight'}
+          style={{
+            top: '410px',
+            left: '706px',
+            borderRadius: '25px',
           }}
         >
           ICT2
+        </div>
+        <div
+          className={divs[3] || 'noLight'}
+          style={{
+            top: '325px',
+            left: '625px',
+            borderRadius: '25px',
+          }}
+        >
+          robot2
+        </div>
+        <div
+          className={divs[4] || 'noLight'}
+          style={{
+            top: '130px',
+            left: '333px',
+            borderRadius: '25px',
+          }}
+        >
+          Router
+        </div>
+        <div
+          className={divs[5] || 'noLight'}
+          style={{
+            top: '265px',
+            left: '333px',
+            borderRadius: '25px',
+          }}
+        >
+          robot3
         </div>
       </div>
     );

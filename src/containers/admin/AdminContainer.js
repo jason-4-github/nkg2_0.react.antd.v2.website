@@ -38,9 +38,10 @@ class AdminContainer extends Component {
   constructor(props) {
     super(props);
 
+    // TODO(JasonHsu): IP need to modify
     this.state = {
       collapsed: false,
-      socket: io('http://10.2.27.112:5002'),
+      socket: io('http://10.5.82.105:3000'),
       socketData: [],
     };
 
