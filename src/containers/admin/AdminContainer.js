@@ -41,7 +41,7 @@ class AdminContainer extends Component {
     // TODO(JasonHsu): IP need to modify
     this.state = {
       collapsed: false,
-      socket: io('http://10.5.82.105:3000'),
+      socket: io('http://Lmsr175.calcomp.co.th:3000'),
       socketData: [],
     };
 
