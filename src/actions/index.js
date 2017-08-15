@@ -25,12 +25,46 @@ function parseJSON(response) {
   return response.json();
 }
 
+export const doRequestEquipmentName = (passProps) => {
+  const countryName = passProps.countryName;
+  const factoryName = passProps.factoryName;
+  const plantName = passProps.plantName;
+  const lineName =  passProps.lineName;
+  return (dispatch) => {
+    dispatch({
+      type: types.EQUIPMENT_NAME_REQUEST,
+    })
+    fetch(`${serverConfig.url}/v0/list/equipmentsOfLine`+
+      `?countryName="${countryName}"`+
+      `&factoryName="${factoryName}"`+
+      `&plantName="${plantName}"`+
+      `&lineName="${lineName}"`
+    )
+    .then(checkStatus)
+    .then(parseJSON)
+    .then((data) => {
+      dispatch({
+        type: types.EQUIPMENT_NAME_SUCCESS,
+        equipments: data.equipments,
+      });
+    })
+    .catch((err) => {
+      console.log('sss', err);
+      dispatch({
+        type: types.EQUIPMENT_NAME_FAILURE,
+        equipments: [],
+      });
+    });
+  }
+}
+
 export const doRequestCount = (passProps) => {
   const countryName = passProps.countryName;
   const factoryName = passProps.factoryName;
   const plantName = passProps.plantName;
   const lineName =  passProps.lineName;
   const equipmentName = passProps.equipmentName;
+  const equipmentSerial = passProps.equipmentSerial;
   const timeZone = passProps.timeZone;
 
   return (dispatch) => {
@@ -43,6 +77,7 @@ export const doRequestCount = (passProps) => {
       `&plantName=${plantName}`+
       `&lineName=${lineName}`+
       `&equipmentName=${equipmentName}`+
+      `&equipmentSerial=${equipmentSerial}`+
       `&timeZone=${timeZone}`
     )
     .then(checkStatus)
@@ -165,12 +200,14 @@ export const doRequestSummaryTable = (passProps) => {
 };
 
 export const doRequestOutput = (passProps) => {
+  console.log(passProps);
   const countryName = passProps.countryName;
   const factoryName = passProps.factoryName;
   const plantName = passProps.plantName;
   const lineName =  passProps.lineName;
-  const equipmentName = passProps.equipmentName;
   const timeZone = passProps.timeZone;
+  let equipmentName = passProps.equipmentName;
+  let equipmentSerial = passProps.equipmentSerial;
   const timeUnit = passProps.actionType;
   const date = passProps.date;
   const startDate = passProps.startTime;
@@ -181,23 +218,77 @@ export const doRequestOutput = (passProps) => {
     `&factoryName="${factoryName}"`+
     `&plantName="${plantName}"`+
     `&lineName="${lineName}"`+
-    `&equipmentName=${equipmentName}`+
+    `&equipmentName="${equipmentName}"`+
+    `&equipmentSerial="${equipmentSerial}"`+
     `&timeZone="${timeZone}"`+
     `&timeUnit="${timeUnit}"`;
   if (timeUnit === 'hour') fetchUrl += `&date="${date}"`;
   else fetchUrl +=`&startDate="${startDate}"&endDate="${endDate}"`
 
+  if (equipmentName !== undefined) {
+    return (dispatch) => {
+      dispatch({
+        type: types.ADMIN_OUTPUT_CHART_REQUEST,
+      })
+      fetch(fetchUrl).then(checkStatus)
+      .then(parseJSON)
+      .then((data) => {
+        dispatch({
+          type: types.ADMIN_OUTPUT_CHART_SUCCESS,
+          outputData: data.payload,
+        });
+      })
+      .catch((err) => {
+        console.log('sss', err);
+        dispatch({
+          type: types.ADMIN_OUTPUT_CHART_FAILURE,
+          outputData: [],
+        });
+      });
+    }
+  }
+
   return (dispatch) => {
     dispatch({
       type: types.ADMIN_OUTPUT_CHART_REQUEST,
     })
-    fetch(fetchUrl)
-    .then(checkStatus)
+    fetch(`${serverConfig.url}/v0/list/equipmentsOfLine`+
+      `?countryName="${countryName}"`+
+      `&factoryName="${factoryName}"`+
+      `&plantName="${plantName}"`+
+      `&lineName="${lineName}"`
+    ).then(checkStatus)
     .then(parseJSON)
     .then((data) => {
-      dispatch({
-        type: types.ADMIN_OUTPUT_CHART_SUCCESS,
-        outputData: data.payload,
+      equipmentName = data.equipments[0].split('-')[0];
+      equipmentSerial = data.equipments[0].split('-')[1];
+      fetchUrl = `${serverConfig.url}/v0/get/output`+
+        `?countryName="${countryName}"`+
+        `&factoryName="${factoryName}"`+
+        `&plantName="${plantName}"`+
+        `&lineName="${lineName}"`+
+        `&equipmentName="${equipmentName}"`+
+        `&equipmentSerial="${equipmentSerial}"`+
+        `&timeZone="${timeZone}"`+
+        `&timeUnit="${timeUnit}"`;
+      if (timeUnit === 'hour') fetchUrl += `&date="${date}"`;
+      else fetchUrl +=`&startDate="${startDate}"&endDate="${endDate}"`
+
+      fetch(fetchUrl)
+      .then(checkStatus)
+      .then(parseJSON)
+      .then((outputData) => {
+        dispatch({
+          type: types.ADMIN_OUTPUT_CHART_SUCCESS,
+          outputData: outputData.payload,
+        });
+      })
+      .catch((err) => {
+        console.log('sss', err);
+        dispatch({
+          type: types.ADMIN_OUTPUT_CHART_FAILURE,
+          outputData: [],
+        });
       });
     })
     .catch((err) => {
@@ -211,11 +302,13 @@ export const doRequestOutput = (passProps) => {
 }
 
 export const doRequestAlarm = (passProps) => {
+  console.log(passProps);
   const countryName = passProps.countryName;
   const factoryName = passProps.factoryName;
   const plantName = passProps.plantName;
   const lineName =  passProps.lineName;
-  const equipmentName = passProps.equipmentName;
+  let equipmentName = passProps.equipmentName;
+  let equipmentSerial = passProps.equipmentSerial;
   const timeZone = passProps.timeZone;
   const timeUnit = passProps.actionType;
   const date = passProps.date;
@@ -227,51 +320,114 @@ export const doRequestAlarm = (passProps) => {
     `&factoryName="${factoryName}"`+
     `&plantName="${plantName}"`+
     `&lineName="${lineName}"`+
-    `&equipmentName=${equipmentName}`+
+    `&equipmentName="${equipmentName}"`+
+    `&equipmentSerial="${equipmentSerial}"`+
     `&timeZone="${timeZone}"`+
     `&timeUnit="${timeUnit}"`;
   if (timeUnit === 'hour') fetchUrl += `&date="${date}"`;
   else fetchUrl +=`&startDate="${startDate}"&endDate="${endDate}"`
 
+  if (equipmentName !== undefined) {
+    return (dispatch) => {
+      dispatch({
+        type: types.ADMIN_ALARM_CHART_REQUEST,
+      })
+      fetch(fetchUrl).then(checkStatus)
+      .then(parseJSON)
+      .then((alarmData) => {
+        let sortedData = [];
+        _.map(alarmData.payload.status, (value, key) => {
+          if (value.totalAlarmTime) {
+          let rebuildObj = {};
+          _.map(value, (innerValue, innerKey) => {
+              if (innerKey === 'description') rebuildObj.description = innerValue.description.en;
+              else rebuildObj[innerKey] = innerValue;
+            });
+            rebuildObj.alarmCode = key;
+            rebuildObj.equipmentName = alarmData.payload.equipmentName;
+            sortedData.push(rebuildObj);
+          }
+        });
+
+        // sort data from higher to lower
+        sortedData = _.sortBy(sortedData, [(data) => { return data.count }]).reverse();
+
+        dispatch({
+          type: types.ADMIN_ALARM_CHART_SUCCESS,
+          alarmData: sortedData,
+        })
+      })
+      .catch((err) => {
+        console.log('sss', err);
+        dispatch({
+          type: types.ADMIN_ALARM_CHART_FAILURE,
+          alarmData: [],
+        });
+      });
+    }
+  }
+
   return (dispatch) => {
     dispatch({
       type: types.ADMIN_ALARM_CHART_REQUEST,
     })
-    fetch(fetchUrl)
-    .then(checkStatus)
+    fetch(`${serverConfig.url}/v0/list/equipmentsOfLine`+
+      `?countryName="${countryName}"`+
+      `&factoryName="${factoryName}"`+
+      `&plantName="${plantName}"`+
+      `&lineName="${lineName}"`
+    ).then(checkStatus)
     .then(parseJSON)
     .then((data) => {
+      equipmentName = data.equipments[0].split('-')[0];
+      equipmentSerial = data.equipments[0].split('-')[1];
+      fetchUrl = `${serverConfig.url}/v0/get/alarm`+
+        `?countryName="${countryName}"`+
+        `&factoryName="${factoryName}"`+
+        `&plantName="${plantName}"`+
+        `&lineName="${lineName}"`+
+        `&equipmentName="${equipmentName}"`+
+        `&equipmentSerial="${equipmentSerial}"`+
+        `&timeZone="${timeZone}"`+
+        `&timeUnit="${timeUnit}"`;
+      if (timeUnit === 'hour') fetchUrl += `&date="${date}"`;
+      else fetchUrl +=`&startDate="${startDate}"&endDate="${endDate}"`
 
-      // desperate the empty data by count
-      let sortedData = [];
-      _.map(data.payload.status, (value, key) => {
-        if (value.totalAlarmTime) {
-        let rebuildObj = {};
-        _.map(value, (innerValue, innerKey) => {
-            if (innerKey === 'description') rebuildObj.description = innerValue.description.en;
-            else rebuildObj[innerKey] = innerValue;
-          });
-          rebuildObj.alarmCode = key;
-          rebuildObj.equipmentName = data.payload.equipmentName;
-          sortedData.push(rebuildObj);
-        }
-      });
+      fetch(fetchUrl)
+      .then(checkStatus)
+      .then(parseJSON)
+      .then((alarmData) => {
+        // desperate the empty data by count
+        let sortedData = [];
+        _.map(alarmData.payload.status, (value, key) => {
+          if (value.totalAlarmTime) {
+          let rebuildObj = {};
+          _.map(value, (innerValue, innerKey) => {
+              if (innerKey === 'description') rebuildObj.description = innerValue.description.en;
+              else rebuildObj[innerKey] = innerValue;
+            });
+            rebuildObj.alarmCode = key;
+            rebuildObj.equipmentName = alarmData.payload.equipmentName;
+            sortedData.push(rebuildObj);
+          }
+        });
 
-      // sort data from higher to lower
-      sortedData = _.sortBy(sortedData, [(data) => { return data.count }]).reverse();
+        // sort data from higher to lower
+        sortedData = _.sortBy(sortedData, [(data) => { return data.count }]).reverse();
 
-      dispatch({
-        type: types.ADMIN_ALARM_CHART_SUCCESS,
-        alarmData: sortedData,
+        dispatch({
+          type: types.ADMIN_ALARM_CHART_SUCCESS,
+          alarmData: sortedData,
+        });
+      })
+      .catch((err) => {
+        console.log('sss', err);
+        dispatch({
+          type: types.ADMIN_ALARM_CHART_FAILURE,
+          alarmData: [],
+        });
       });
     })
-    .catch((err) => {
-      console.log('sss', err);
-      dispatch({
-        type: types.ADMIN_ALARM_CHART_FAILURE,
-        alarmData: [],
-      });
-    });
   }
 }
 

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Row, Col, Card, DatePicker, Button, Dropdown, Menu, Icon, Spin, Select, Table } from 'antd';
+import { Row, Col, Card, DatePicker, Button, Dropdown, Menu, Icon, Spin, Table } from 'antd';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import G2 from 'g2';
@@ -8,10 +8,10 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 
 import { alarmColumns } from './../../../constants/tableColumns';
-import { doRequestAlarm } from '../../../actions';
+import { doRequestAlarm, doRequestEquipmentName } from '../../../actions';
+import SelectMenu from './../../../components/SelectMenu';
 
 const { MonthPicker } = DatePicker;
-const Option = Select.Option;
 
 const dateFormat = 'YYYY-MM-DD';
 const monthFormat = 'YYYY-MM';
@@ -23,6 +23,8 @@ class AlarmContainer extends Component {
     this.state = {
       filterValue: 'hour',
       monthDropdownValue: moment().format('YYYY'),
+      machineName: 'ICT-2',
+      dateString: moment().format('YYYY-MM-DD'),
     };
 
     this.onDatePickerChange = this.onDatePickerChange.bind(this);
@@ -30,6 +32,7 @@ class AlarmContainer extends Component {
     this.renderPicker = this.renderPicker.bind(this);
     this.handleMonthDropdown = this.handleMonthDropdown.bind(this);
     this.onFilterChange = this.onFilterChange.bind(this);
+    this.selectMenuOnChange = this.selectMenuOnChange.bind(this);
   }
   componentDidMount() {
     const date = moment().format('YYYY-MM-DD');
@@ -38,15 +41,16 @@ class AlarmContainer extends Component {
 
   onFilterChange(e) {
     const filterDate = moment().format(e === 'month' ? 'YYYY' : 'YYYY-MM-DD');
-
-    this.doSearch(e, filterDate);
+    this.doSearch(e, filterDate, this.state.machineName);
     this.setState({ filterValue: e });
   }
   // do the date or hour action
   onDatePickerChange(date, dateString) {
-    this.doSearch(this.state.filterValue, dateString);
+    const { filterValue, machineName } = this.state;
+    this.doSearch(filterValue, dateString, machineName);
+    this.setState({ dateString });
   }
-  doSearch(type, onChangeValue) {
+  doSearch(type, onChangeValue, machineName) {
     /* eslint-disable no-shadow */
     const { doRequestAlarm } = this.props;
     /* eslint-enable no-shadow */
@@ -63,15 +67,17 @@ class AlarmContainer extends Component {
     const endTime = type === 'month' ? `${year}-12-31` : `${year}-${month}-${lastDay}`;
 
     // (XXX): need modify more common sense
-    const equipmentName = 'ict';
     const timeZone = 'Asia/Bangkok';
+    const equipmentName = !machineName ? machineName : machineName.split('-')[0];
+    const equipmentSerial = !machineName ? machineName : machineName.split('-')[1];
 
     const defaultobjs = {
       countryName,
       factoryName,
       plantName,
-      lineName,
       equipmentName,
+      equipmentSerial,
+      lineName,
       timeZone,
       date,
       startTime,
@@ -171,7 +177,7 @@ class AlarmContainer extends Component {
   handleMonthDropdown(e) {
     const monthOptions = ['2016', '2017'];
     const onChangeValue = monthOptions[e.key - 1];
-    this.doSearch('month', onChangeValue);
+    this.doSearch('month', onChangeValue, this.state.machineName);
     this.setState({ monthDropdownValue: onChangeValue });
   }
   renderPicker() {
@@ -186,7 +192,7 @@ class AlarmContainer extends Component {
       );
       return (
         <Dropdown overlay={menu} trigger={['click']}>
-          <Button>
+          <Button className="info-margin">
             { this.state.monthDropdownValue } <Icon type="down" />
           </Button>
         </Dropdown>
@@ -213,6 +219,11 @@ class AlarmContainer extends Component {
       />
     );
   }
+  selectMenuOnChange(e){
+    const { filterValue, dateString, monthDropdownValue } = this.state;
+    this.doSearch(filterValue, filterValue === 'month' ? monthDropdownValue : dateString , e);
+    this.setState({machineName: e});
+  }
   render() {
     const { alarmData, type } = this.props;
     const { filterValue } = this.state;
@@ -223,46 +234,45 @@ class AlarmContainer extends Component {
     return (
       <div id="alarm-container">
         <Row gutter={10}>
-        <Col span={24} className="col chartRow">
-          <Card
-            className="gutter-box"
-            title={
-              <Row>
-                <Col span={12}>
-                  <h3 className="leftWord">
-                  { filterValue.charAt(0).toUpperCase() + filterValue.slice(1) }
-                  </h3>
-                </Col>
-                <Col span={12} className="rightWord">
-                  <Select defaultValue="hour" style={{ width: '100px' }} onChange={this.onFilterChange}>
-                    <Option value="hour">Hour</Option>
-                    <Option value="date">Date</Option>
-                    <Option value="month">Month</Option>
-                  </Select>
-                  { this.renderPicker() }
-                </Col>
-              </Row>
-            }
-          >
-            { alarmData !== undefined && !requestSpin
-              ? this.generateChart(alarmData, type)
-              : <div className="defaultChartDiv">
-                  <div className="emptyDiv" />
-                  <Spin />
-                </div>
-            }
-          </Card>
-        </Col>
-        <Col span={24} className="col">
-          <Card>
-            <Table
-              dataSource={this.generateTableDataSource(alarmData)}
-              columns={alarmColumns}
-              size="small"
-            />
-           </Card>
-        </Col>
-      </Row>
+          <Col span={24} className="rightWord">
+            <SelectMenu options={['ICT-2', 'ICT-1']} styleName="ictRouterSelect" onChangeFunc={this.selectMenuOnChange} container="alarm" />
+          </Col>
+          <Col span={24} className="col chartRow">
+            <Card
+              className="gutter-box"
+              title={
+                <Row>
+                  <Col span={12}>
+                    <h3 className="leftWord">
+                    { filterValue.charAt(0).toUpperCase() + filterValue.slice(1) }
+                    </h3>
+                  </Col>
+                  <Col span={12} className="rightWord">
+                    <SelectMenu options={['Hour', 'Date', 'Month']} styleName="selectDateType" onChangeFunc={this.onFilterChange} container="alarm" />
+                    { this.renderPicker() }
+                  </Col>
+                </Row>
+              }
+            >
+              { alarmData !== undefined && !requestSpin
+                ? this.generateChart(alarmData, type)
+                : <div className="defaultChartDiv">
+                    <div className="emptyDiv" />
+                    <Spin />
+                  </div>
+              }
+            </Card>
+          </Col>
+          <Col span={24} className="col">
+            <Card>
+              <Table
+                dataSource={this.generateTableDataSource(alarmData)}
+                columns={alarmColumns}
+                size="small"
+              />
+            </Card>
+          </Col>
+        </Row>
       </div>
     );
   }
@@ -282,5 +292,6 @@ const mapStateToProps = (state) => {
 
 export default connect(
   mapStateToProps,
-  { doRequestAlarm },
+  { doRequestAlarm,
+    doRequestEquipmentName },
 )(AlarmContainer);

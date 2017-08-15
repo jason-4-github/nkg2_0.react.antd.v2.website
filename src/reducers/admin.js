@@ -5,6 +5,13 @@ const initialState = {
 
 const admin = (state = initialState, action) => {
   switch (action.type) {
+    case types.EQUIPMENT_NAME_REQUEST:
+    case types.EQUIPMENT_NAME_SUCCESS:
+    case types.EQUIPMENT_NAME_FAILURE:
+      return {
+        ...state,
+        ...action,
+      }
     case types.ADMIN_ALARM_CHART_REQUEST:
     case types.ADMIN_ALARM_CHART_SUCCESS:
     case types.ADMIN_ALARM_CHART_FAILURE:

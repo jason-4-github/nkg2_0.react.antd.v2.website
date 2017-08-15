@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import _ from 'lodash';
 
 import OverviewContainer from './dashboard/OverviewContainer';
-import SummaryContainer from './dashboard/SummaryContainer';
+import RealtimeContainer from './dashboard/RealtimeContainer';
 import OutputContainer from './dashboard/OutputContainer';
 import DowntimeContainer from './dashboard/DowntimeContainer';
 import AlarmContainer from './dashboard/AlarmContainer';
@@ -63,7 +63,7 @@ class AdminContainer extends Component {
   tabsCallback(key) {
     console.log(key);
     this.state.socket.connect();
-    if (key !== '1' && key !== '2') {
+    if (key !== '2') {
       this.state.socket.emit('endToSendData');
     } else {
       this.state.socket.emit('startToSendData');
@@ -107,8 +107,8 @@ class AdminContainer extends Component {
                 <TabPane tab="Overview" key="1">
                   <OverviewContainer {...this.props} socketData={this.state.socketData} />
                 </TabPane>
-                <TabPane tab="Summary" key="2">
-                  <SummaryContainer {...this.props} socketData={this.state.socketData} />
+                <TabPane tab="Realtime" key="2">
+                  <RealtimeContainer {...this.props} socketData={this.state.socketData} />
                 </TabPane>
                 <TabPane tab="Output" key="3">
                   <OutputContainer {...this.props} />

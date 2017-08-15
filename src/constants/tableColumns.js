@@ -66,7 +66,7 @@ export const outputColumns = [
   },
 ];
 
-export const overviewColumns = [
+export const realtimeColumns = [
   {
     title: 'No',
     dataIndex: 'no',
@@ -96,7 +96,7 @@ export const overviewInformationTableColumns = [
   },
 ];
 
-export const summaryColumns = [
+export const overviewColumns = [
   {
     title: 'Machine Name',
     dataIndex: 'machineName',

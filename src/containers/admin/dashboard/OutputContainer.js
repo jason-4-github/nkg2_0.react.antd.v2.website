@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Row, Col, Card, DatePicker, Button, Dropdown, Menu, Icon, Spin, Select, Table } from 'antd';
+import { Row, Col, Card, DatePicker, Button, Dropdown, Menu, Icon, Spin, Table } from 'antd';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import G2 from 'g2';
@@ -9,9 +9,9 @@ import PropTypes from 'prop-types';
 
 import { doRequestOutput } from '../../../actions';
 import { outputColumns } from './../../../constants/tableColumns';
+import SelectMenu from './../../../components/SelectMenu';
 
 const { MonthPicker } = DatePicker;
-const Option = Select.Option;
 
 const dateFormat = 'YYYY-MM-DD';
 const monthFormat = 'YYYY-MM';
@@ -23,6 +23,8 @@ class OutputContainer extends Component {
     this.state = {
       filterValue: 'hour',
       monthDropdownValue: moment().format('YYYY'),
+      machineName: 'ICT-2',
+      dateString: moment().format('YYYY-MM-DD'),
     };
 
     this.onDatePickerChange = this.onDatePickerChange.bind(this);
@@ -30,23 +32,25 @@ class OutputContainer extends Component {
     this.renderPicker = this.renderPicker.bind(this);
     this.handleMonthDropdown = this.handleMonthDropdown.bind(this);
     this.onFilterChange = this.onFilterChange.bind(this);
+    this.selectMenuOnChange = this.selectMenuOnChange.bind(this);
   }
   componentDidMount() {
     const date = moment().format('YYYY-MM-DD');
     this.doSearch('hour', date);
   }
-
   onFilterChange(e) {
     const filterDate = moment().format(e === 'month' ? 'YYYY' : 'YYYY-MM-DD');
 
-    this.doSearch(e, filterDate);
+    this.doSearch(e, filterDate, this.state.machineName);
     this.setState({ filterValue: e });
   }
   // do the date or hour action
   onDatePickerChange(date, dateString) {
-    this.doSearch(this.state.filterValue, dateString);
+    const { filterValue, machineName } = this.state;
+    this.doSearch(filterValue, dateString, machineName);
+    this.setState({ dateString });
   }
-  doSearch(type, onChangeValue) {
+  doSearch(type, onChangeValue, machineName) {
     /* eslint-disable no-shadow */
     const { doRequestOutput } = this.props;
     /* eslint-enable no-shadow */
@@ -62,8 +66,9 @@ class OutputContainer extends Component {
     const endTime = type === 'month' ? `${year}-12-31` : `${year}-${month}-${lastDay}`;
 
     // (XXX): need modify more common sense
-    const equipmentName = 'ict';
     const timeZone = 'Asia/Bangkok';
+    const equipmentName = !machineName ? machineName : machineName.split('-')[0];
+    const equipmentSerial = !machineName ? machineName : machineName.split('-')[1];
 
     const defaultobjs = {
       countryName,
@@ -71,6 +76,7 @@ class OutputContainer extends Component {
       plantName,
       lineName,
       equipmentName,
+      equipmentSerial,
       timeZone,
       date,
       startTime,
@@ -167,7 +173,7 @@ class OutputContainer extends Component {
   handleMonthDropdown(e) {
     const monthOptions = ['2016', '2017'];
     const onChangeValue = monthOptions[e.key - 1];
-    this.doSearch('month', onChangeValue);
+    this.doSearch('month', onChangeValue, this.state.machineName);
     this.setState({ monthDropdownValue: onChangeValue });
   }
   renderPicker() {
@@ -209,15 +215,23 @@ class OutputContainer extends Component {
       />
     );
   }
+  selectMenuOnChange(e){
+    const { filterValue, dateString, monthDropdownValue } = this.state;
+    this.doSearch(filterValue, filterValue === 'month' ? monthDropdownValue : dateString , e);
+    this.setState({machineName: e});
+  }
   render() {
     const { outputData, type } = this.props;
     const { filterValue } = this.state;
-
+    console.log('sssssss', this.state.machineName);
     const actionTypeSplit = type.split('_');
     const requestSpin = actionTypeSplit[3] === 'REQUEST' || false;
     return (
       <div id="output-container">
         <Row gutter={10}>
+          <Col span={24} className="rightWord">
+            <SelectMenu options={['ICT-2', 'ICT-1']} styleName="ictRouterSelect" onChangeFunc={this.selectMenuOnChange} container="output" />
+          </Col>
           <Col span={24} className="col chartRow">
             <Card
               className="gutter-box"
@@ -229,11 +243,7 @@ class OutputContainer extends Component {
                     </h3>
                   </Col>
                   <Col span={12} className="rightWord">
-                    <Select defaultValue="hour" style={{ width: '100px' }} onChange={this.onFilterChange}>
-                      <Option value="hour">Hour</Option>
-                      <Option value="date">Date</Option>
-                      <Option value="month">Month</Option>
-                    </Select>
+                    <SelectMenu options={['Hour', 'Date', 'Month']} styleName="selectDateType" onChangeFunc={this.onFilterChange} container="output" />
                     { this.renderPicker() }
                   </Col>
                 </Row>
@@ -266,6 +276,7 @@ class OutputContainer extends Component {
 OutputContainer.propTypes = {
   params: PropTypes.object,
   doRequestOutput: PropTypes.func,
+  doRequestEquipmentName: PropTypes.func,
   outputData: PropTypes.array,
 };
 
