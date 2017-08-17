@@ -6,10 +6,7 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 
 import { overviewColumns } from './../../../constants/tableColumns';
-import {
-  doRequestSummaryTable,
-  doRequestCount,
-} from '../../../actions';
+import { doRequestOverviewTable } from '../../../actions';
 
 class OverviewContainer extends Component {
   constructor(props) {
@@ -21,10 +18,7 @@ class OverviewContainer extends Component {
   }
   componentDidMount() {
     /* eslint-disable no-shadow */
-    const {
-      doRequestSummaryTable,
-      doRequestCount
-    } = this.props;
+    const { doRequestOverviewTable } = this.props;
     /* eslint-enable no-shadow */
 
     const countryName = this.props.params.country;
@@ -32,30 +26,24 @@ class OverviewContainer extends Component {
     const plantName = this.props.params.plant;
     const lineName = this.props.params.line;
     // (XXX): need modify more common sense
-    const equipmentName = 'ict';
-    const timeZone = 'Asia/Bangkok';
 
-    doRequestSummaryTable({ line: lineName });
-    doRequestCount({
+    doRequestOverviewTable({
       countryName,
       factoryName,
       plantName,
-      lineName,
-      equipmentName,
-      timeZone
-    });
+      lineName});
   }
-  displayInformationData(countData, type) {
+  displayInformationData(overviewTableData, type) {
     if (type === 'ADMIN_OVERVIEW_INFORMATION_REQUEST') {
       return (<div><Spin /></div>);
     }
     if (type === 'ADMIN_OVERVIEW_INFORMATION_FAILURE') {
       return (<div> Ooops... Something Wrong. </div>);
     }
-    if (!countData) { return (<div><Spin /></div>); }
+    if (!overviewTableData) { return (<div><Spin /></div>); }
 
-    const isConnect = countData.length !== 0;
-    const data = countData;
+    const isConnect = overviewTableData.length !== 0;
+    const data = overviewTableData;
     const line = this.props.params.line;
     let connectStatus;
     if (!isConnect && data) {
@@ -106,34 +94,41 @@ class OverviewContainer extends Component {
   generateTableDataSource(data) {
     if (!data) { return ([]); }
     const arr = [];
+    // set the running time
+    const startRunningTimeObj = moment().toObject();
+    const startRunningTime = moment([startRunningTimeObj.years, startRunningTimeObj.months,
+        startRunningTimeObj.date, 8, 0, 0, 0]);
+    const now = moment(moment().toArray());
+    const timeDiff = now.diff(startRunningTime);
+
     _.map(data, (d, idx) => {
       arr.push({
         key: idx,
-        machineName: d.MachineName,
-        runningTime: moment().startOf('day').seconds(d.RunningTime / 1000).format('HH:mm:ss'),
-        idleTime: moment().startOf('day').seconds(d.IdleTime / 1000).format('HH:mm:ss'),
-        alarmTime: moment().startOf('day').seconds(d.AlarmTime / 1000).format('HH:mm:ss'),
-        recordTime: moment().startOf('day').seconds(d.RecordTime / 1000).format('HH:mm:ss'),
-        inputCount: d.InputCount,
-        outputOkCount: d.OutputOKCount,
-        outputNgCount: d.OutputNGCount,
+        machineName: d.equipmentName,
+        runningTime: moment().startOf('day').seconds(timeDiff/1000).format('HH:mm:ss'),
+        idleTime: '00:00:00',
+        alarmTime: moment().startOf('day').seconds(d.alarmTime / 1000).format('HH:mm:ss'),
+        recordTime: moment().startOf('day').seconds(timeDiff/1000).format('HH:mm:ss'),
+        inputCount: d.okQuantity + d.ngQuantity,
+        outputOkCount: d.okQuantity,
+        outputNgCount: d.ngQuantity,
       });
     });
 
     return arr;
   }
   render() {
-    const { type, summaryTableData, countData } = this.props;
+    const { type, overviewTableData } = this.props;
     return (
       <div id="overview-container">
         <Row>
           <Col span={24}>
-            {this.displayInformationData(countData, type)}
+            {this.displayInformationData(overviewTableData, type)}
           </Col>
           <Col span={24} className="col">
             <Card>
               <Table
-                dataSource={this.generateTableDataSource(summaryTableData)}
+                dataSource={this.generateTableDataSource(overviewTableData)}
                 columns={overviewColumns}
               />
             </Card>
@@ -146,10 +141,6 @@ class OverviewContainer extends Component {
 
 OverviewContainer.propTypes = {
   params: PropTypes.object,
-  doRequestSummaryTable: PropTypes.func,
-  doRequestCount: PropTypes.func,
-  summaryInformationData: PropTypes.array,
-  summaryTableData: PropTypes.array,
   type: PropTypes.string,
 };
 
@@ -161,8 +152,5 @@ const mapStateToProps = (state) => {
 
 export default connect(
   mapStateToProps,
-  {
-    doRequestSummaryTable,
-    doRequestCount,
-  },
+  { doRequestOverviewTable },
 )(OverviewContainer);

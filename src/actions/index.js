@@ -25,34 +25,99 @@ function parseJSON(response) {
   return response.json();
 }
 
-export const doRequestEquipmentName = (passProps) => {
+export const doRequestOverviewTable = (passProps) => {
   const countryName = passProps.countryName;
   const factoryName = passProps.factoryName;
   const plantName = passProps.plantName;
   const lineName =  passProps.lineName;
+  let fetchApiName = 'list/equipmentsOfLine';
+  let fetchBasicInfo = `?countryName="${countryName}"`+
+    `&factoryName="${factoryName}"`+
+    `&plantName="${plantName}"`+
+    `&lineName="${lineName}"`;
+  let fetchUrl = `${serverConfig.url}/v0/${fetchApiName}${fetchBasicInfo}`;
+
   return (dispatch) => {
     dispatch({
-      type: types.EQUIPMENT_NAME_REQUEST,
+      type: types.ADMIN_OVERVIEW_TABLE_REQUEST,
     })
-    fetch(`${serverConfig.url}/v0/list/equipmentsOfLine`+
-      `?countryName="${countryName}"`+
-      `&factoryName="${factoryName}"`+
-      `&plantName="${plantName}"`+
-      `&lineName="${lineName}"`
-    )
+    fetch(fetchUrl)
     .then(checkStatus)
     .then(parseJSON)
     .then((data) => {
-      dispatch({
-        type: types.EQUIPMENT_NAME_SUCCESS,
-        equipments: data.equipments,
+      // data: { success, equipments };
+      const timeZone = 'Asia/Bangkok';
+      const startDate = moment().format('YYYY-MM-DD');
+      const endDate = startDate;
+      const collectData = [];
+      let timeUnit = 'date';
+
+      _.map(data.equipments, (value) => {
+        const dataObj = {};
+        dataObj.equipmentName = value;
+        const equipmentDeconstruct = value.split('-');
+        const equipmentName = equipmentDeconstruct[0];
+        const equipmentSerial = equipmentDeconstruct[1];
+        fetchApiName = 'get/output'
+        fetchUrl = `${serverConfig.url}/v0/${fetchApiName}${fetchBasicInfo}`;
+        // call output Api after get equipmentName
+        fetch(`${fetchUrl}&timeZone="${timeZone}"` +
+          `&timeUnit="${timeUnit}"&startDate="${startDate}"&endDate="${endDate}"` +
+          `&equipmentName="${equipmentName}"&equipmentSerial="${equipmentSerial}"`)
+        .then(checkStatus)
+        .then(parseJSON)
+        .then((outputData) => {
+          // outputData: { success, payload: { id, time, okQuantity, ngQuantity } };
+          const compareDate = moment().format('M/D');
+          _.map(outputData.payload, (outputValue) => {
+            if (outputValue.time === compareDate) {
+              dataObj.okQuantity = outputValue.okQuantity;
+              dataObj.ngQuantity = outputValue.ngQuantity;
+              dataObj.inputQuantity = outputValue.ngQuantity + outputValue.okQuantity;
+            }
+          });
+
+          // set the alarm api url config
+          fetchApiName = 'get/alarm'
+          fetchUrl = `${serverConfig.url}/v0/${fetchApiName}${fetchBasicInfo}`;
+          timeUnit = 'hour';
+
+          // call alarm Api after get outputData
+          fetch(`${fetchUrl}&timeZone="${timeZone}"&timeUnit="${timeUnit}"&date="${startDate}"`+
+            `&equipmentName="${equipmentName}"&equipmentSerial="${equipmentSerial}"`)
+          .then(checkStatus)
+          .then(parseJSON)
+          .then((alarmData) => {
+
+            // alarmData: { success, payload: { equipmentName, status: { description: { errorCode }, totalAlarmTime, count } } };
+            let totalTime = 0;
+            _.map(alarmData.payload.status, (alarmValue) => {
+              if (alarmValue.totalAlarmTime) totalTime += alarmValue.totalAlarmTime;
+            });
+            // TODO(jasonHsu): record time need to modify
+            dataObj.alarmTime = totalTime;
+            collectData.push(dataObj);
+            if (collectData.length === data.equipments.length) {
+              dispatch({
+                type: types.ADMIN_OVERVIEW_TABLE_SUCCESS,
+                overviewTableData: collectData,
+              });
+            }
+          })
+          .catch((err) => {
+            console.log('get alarm Error: ', err);
+          });
+        })
+        .catch((err) => {
+          console.log('get output Error: ', err);
+        });
       });
     })
     .catch((err) => {
       console.log('sss', err);
       dispatch({
-        type: types.EQUIPMENT_NAME_FAILURE,
-        equipments: [],
+        type: types.ADMIN_OVERVIEW_TABLE_FAILURE,
+        overviewTableData: [],
       });
     });
   }
@@ -200,7 +265,7 @@ export const doRequestSummaryTable = (passProps) => {
 };
 
 export const doRequestOutput = (passProps) => {
-  console.log(passProps);
+  console.log(moment().format('M/D'));
   const countryName = passProps.countryName;
   const factoryName = passProps.factoryName;
   const plantName = passProps.plantName;
@@ -224,6 +289,7 @@ export const doRequestOutput = (passProps) => {
     `&timeUnit="${timeUnit}"`;
   if (timeUnit === 'hour') fetchUrl += `&date="${date}"`;
   else fetchUrl +=`&startDate="${startDate}"&endDate="${endDate}"`
+    console.log('ssss', fetchUrl);
 
   if (equipmentName !== undefined) {
     return (dispatch) => {
@@ -278,6 +344,9 @@ export const doRequestOutput = (passProps) => {
       .then(checkStatus)
       .then(parseJSON)
       .then((outputData) => {
+        _.map(outputData.payload, (value, key) => {
+          console.log('vvvv', );
+        });
         dispatch({
           type: types.ADMIN_OUTPUT_CHART_SUCCESS,
           outputData: outputData.payload,

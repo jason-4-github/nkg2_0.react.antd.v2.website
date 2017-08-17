@@ -8,7 +8,7 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 
 import { alarmColumns } from './../../../constants/tableColumns';
-import { doRequestAlarm, doRequestEquipmentName } from '../../../actions';
+import { doRequestAlarm } from '../../../actions';
 import SelectMenu from './../../../components/SelectMenu';
 
 const { MonthPicker } = DatePicker;
@@ -292,6 +292,5 @@ const mapStateToProps = (state) => {
 
 export default connect(
   mapStateToProps,
-  { doRequestAlarm,
-    doRequestEquipmentName },
+  { doRequestAlarm },
 )(AlarmContainer);

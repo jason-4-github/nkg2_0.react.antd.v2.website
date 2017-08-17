@@ -8,7 +8,7 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 
 import { downtimeColumns } from './../../../constants/tableColumns';
-import { doRequestAlarm, doRequestEquipmentName } from '../../../actions';
+import { doRequestAlarm } from '../../../actions';
 import SelectMenu from './../../../components/SelectMenu';
 
 const { MonthPicker } = DatePicker;
@@ -367,7 +367,6 @@ class DowntimeContainer extends Component {
 DowntimeContainer.propTypes = {
   params: PropTypes.object,
   doRequestAlarm: PropTypes.func,
-  doRequestEquipmentName: PropTypes.func,
   alarmData: PropTypes.array,
 };
 
@@ -379,5 +378,5 @@ const mapStateToProps = (state) => {
 
 export default connect(
   mapStateToProps,
-  { doRequestAlarm, doRequestEquipmentName },
+  { doRequestAlarm },
 )(DowntimeContainer);
