@@ -12,6 +12,19 @@ const admin = (state = initialState, action) => {
         ...state,
         ...action,
       }
+    case types.ADMIN_DOWNTIME_CHART_REQUEST:
+      return {
+        ...state,
+        ...action,
+        isBarChartUpdate: [],
+      }
+    case types.ADMIN_DOWNTIME_CHART_SUCCESS:
+    case types.ADMIN_DOWNTIME_CHART_FAILURE:
+      return {
+        ...state,
+        ...action,
+        isBarChartUpdate: action.downtimeData,
+      }
     case types.ADMIN_ALARM_CHART_REQUEST:
     case types.ADMIN_ALARM_CHART_SUCCESS:
     case types.ADMIN_ALARM_CHART_FAILURE:

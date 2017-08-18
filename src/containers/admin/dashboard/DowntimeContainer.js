@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Row, Col, Card, DatePicker, Button, Dropdown, Menu, Icon, Table } from 'antd';
+import { Row, Col, Card, DatePicker, Button, Dropdown, Menu, Icon, Table, Spin } from 'antd';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import G2 from 'g2';
@@ -8,7 +8,7 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 
 import { downtimeColumns } from './../../../constants/tableColumns';
-import { doRequestAlarm } from '../../../actions';
+import { doRequestDowntime } from '../../../actions';
 import SelectMenu from './../../../components/SelectMenu';
 
 const { MonthPicker } = DatePicker;
@@ -24,6 +24,7 @@ class DowntimeContainer extends Component {
       filterValue: 'hour',
       monthDropdownValue: moment().format('YYYY'),
       chartData: [],
+      barChartDesperate: true,
       machineName: 'ICT-2',
       dateString: moment().format('YYYY-MM-DD'),
     };
@@ -35,7 +36,6 @@ class DowntimeContainer extends Component {
     this.onFilterChange = this.onFilterChange.bind(this);
     this.handleChartClick = this.handleChartClick.bind(this);
     this.generatePieChart = this.generatePieChart.bind(this);
-    this.selectMenuOnChange = this.selectMenuOnChange.bind(this);
   }
   componentDidMount() {
     const date = moment().format('YYYY-MM-DD');
@@ -44,18 +44,24 @@ class DowntimeContainer extends Component {
   onFilterChange(e) {
     const filterDate = moment().format(e === 'month' ? 'YYYY' : 'YYYY-MM-DD');
 
-    this.doSearch(e, filterDate, this.state.machineName);
-    this.setState({ filterValue: e });
+    this.doSearch(e, filterDate);
+    this.setState({
+      filterValue: e,
+      barChartDesperate: true,
+    });
   }
   // do the date or hour action
   onDatePickerChange(date, dateString) {
-    const { filterValue, machineName } = this.state;
-    this.doSearch(filterValue, dateString, machineName);
-    this.setState({ dateString });
+    const { filterValue } = this.state;
+    this.doSearch(filterValue, dateString);
+    this.setState({
+      dateString,
+      barChartDesperate: true,
+    });
   }
-  doSearch(type, onChangeValue, machineName) {
+  doSearch(type, onChangeValue) {
     /* eslint-disable no-shadow */
-    const { doRequestAlarm } = this.props;
+    const { doRequestDowntime } = this.props;
     /* eslint-enable no-shadow */
 
     const countryName = this.props.params.country;
@@ -69,9 +75,8 @@ class DowntimeContainer extends Component {
     const startTime = type === 'month' ? `${year}-01-01` : `${year}-${month}-01`;
     const endTime = type === 'month' ? `${year}-12-31` : `${year}-${month}-${lastDay}`;
 
+
     // (XXX): need modify more common sense
-    const equipmentName = !machineName ? machineName : machineName.split('-')[0];
-    const equipmentSerial = !machineName ? machineName : machineName.split('-')[1];
     const timeZone = 'Asia/Bangkok';
 
     const defaultobjs = {
@@ -79,8 +84,6 @@ class DowntimeContainer extends Component {
       factoryName,
       plantName,
       lineName,
-      equipmentName,
-      equipmentSerial,
       timeZone,
       date,
       startTime,
@@ -88,7 +91,7 @@ class DowntimeContainer extends Component {
       actionType: type,
     }
 
-    doRequestAlarm(defaultobjs);
+    doRequestDowntime(defaultobjs);
   }
   // process data for table
   generateTableDataSource(data) {
@@ -111,13 +114,21 @@ class DowntimeContainer extends Component {
   generateChart(data, actionType) {
     if (!data) { return []; }
 
+    const { barChartDesperate } = this.state;
+    const dataArrs = [];
+    if (barChartDesperate) {
+      _.map(data, (value) => {
+        if (value.equipmentName === this.state.machineName) dataArrs.push(value);
+      });
+    }
+
     // determine the animate active or not
     const actionTypeSplit = actionType.split('_');
     const animate = actionTypeSplit[2] === 'REQUEST' ?  '' : actionTypeSplit[1].toLowerCase();
 
     const arr = [];
     let index = 0;
-    _.map(data, (d, key) => {
+    _.map(barChartDesperate ? dataArrs : data, (d, key) => {
       if (d.totalAlarmTime > 0) {
         index += 1;
         arr.push({
@@ -176,21 +187,12 @@ class DowntimeContainer extends Component {
   handleChartClick(data) {
     this.setState({
       chartData: data,
+      barChartDesperate: false,
     })
   }
   generatePieChart(data, handleChartClick) {
-    // if (!data) { return []; }
-
-    const data2 = [
-      {description: "Robot Vacuum2 Error", totalAlarmTime: 446233417, count: 16, alarmCode: "8010", equipmentName: "ict2"},
-      {description: "Robot Vacuum2 Error", totalAlarmTime: 446233417, count: 16, alarmCode: "8010", equipmentName: "ict"},
-      {description: "ICT-1 Feedback Result Timeout", totalAlarmTime: 140451135, count: 3, alarmCode: "6009", equipmentName: "ict"},
-      {description: "Robot Command Error", totalAlarmTime: 7930714, count: 1, alarmCode: "8031", equipmentName: "ict"},
-      {description: "Robot Vacuum1 Error", totalAlarmTime: 33887713, count: 1, alarmCode: "8009", equipmentName: "ict"}
-    ];
-
     const arr = [];
-    _.map(data2, (d, idx) => {
+    _.map(data, (d, idx) => {
       if (d.totalAlarmTime > 0) {
         arr.push({
           name: idx,
@@ -231,7 +233,7 @@ class DowntimeContainer extends Component {
         if (tmpData) {
           const tmpEquipmentName = tmpData._origin.equipmentName;
           const tmpArrs = [];
-          _.map(data2, (value) => {
+          _.map(data, (value) => {
             if (value.equipmentName === tmpEquipmentName) tmpArrs.push(value);
           });
 
@@ -257,8 +259,11 @@ class DowntimeContainer extends Component {
   handleMonthDropdown(e) {
     const monthOptions = ['2016', '2017'];
     const onChangeValue = monthOptions[e.key - 1];
-    this.doSearch('month', onChangeValue, this.state.machineName);
-    this.setState({ monthDropdownValue: onChangeValue });
+    this.doSearch('month', onChangeValue);
+    this.setState({
+      monthDropdownValue: onChangeValue,
+      barChartDesperate: true,
+    });
   }
   renderPicker() {
     let now;
@@ -299,24 +304,14 @@ class DowntimeContainer extends Component {
       />
     );
   }
-  selectMenuOnChange(e){
-    const { filterValue, dateString, monthDropdownValue } = this.state;
-    this.doSearch(filterValue, filterValue === 'month' ? monthDropdownValue : dateString , e);
-    this.setState({machineName: e});
-  }
   render() {
-    const { alarmData, type } = this.props;
-    const { filterValue, chartData } = this.state;
-
-    // const actionTypeSplit = type.split('_');
-    // const requestSpin = actionTypeSplit[3] === 'REQUEST' || false;
-
+    const { downtimeData, type, isBarChartUpdate } = this.props;
+    const { filterValue, chartData, barChartDesperate } = this.state;
+    const actionTypeSplit = type.split('_');
+    const requestSpin = actionTypeSplit[3] === 'REQUEST' || false;
     return (
       <div id="downtime-container">
         <Row gutter={10}>
-          <Col span={24} className="rightWord">
-            <SelectMenu options={['ICT-2', 'ICT-1']} styleName="ictRouterSelect" onChangeFunc={this.selectMenuOnChange} container="downtime" />
-          </Col>
           <Col span={24} className="col chartRow">
             <Card
               className="gutter-box"
@@ -325,6 +320,7 @@ class DowntimeContainer extends Component {
                   <Col span={12}>
                     <h3 className="leftWord">
                     { filterValue.charAt(0).toUpperCase() + filterValue.slice(1) }
+                    <b style={{ paddingLeft: '10px' }}>[可點擊圓餅圖以呈現Alarm資料]</b>
                     </h3>
                   </Col>
                   <Col span={12} className="rightWord">
@@ -335,13 +331,25 @@ class DowntimeContainer extends Component {
               }
             >
             <Col span={12}>
-              { this.generatePieChart(alarmData, this.handleChartClick) }
+              { downtimeData !== undefined && !requestSpin
+                ? this.generatePieChart(downtimeData, this.handleChartClick)
+                : <div className="defaultChartDiv">
+                    <div className="emptyDiv" />
+                    <Spin />
+                  </div>
+              }
             </Col>
             <Col span={12}>
-              { this.generateChart(chartData, type) }
+              { downtimeData !== undefined && !requestSpin
+                ? this.generateChart(barChartDesperate ? isBarChartUpdate : chartData , type)
+                : <div className="defaultChartDiv">
+                    <div className="emptyDiv" />
+                    <Spin />
+                  </div>
+              }
             </Col>
-              {/* { alarmData !== undefined && !requestSpin
-                ? this.generateChart(alarmData, type)
+              {/* { downtimeData !== undefined && !requestSpin
+                ? this.generateChart(downtimeData, type)
                 : <div className="defaultChartDiv">
                     <div className="emptyDiv" />
                     <Spin />
@@ -352,9 +360,8 @@ class DowntimeContainer extends Component {
           <Col span={24} className="col">
             <Card>
               <Table
-                dataSource={this.generateTableDataSource(alarmData)}
+                dataSource={this.generateTableDataSource(downtimeData)}
                 columns={downtimeColumns}
-                size="small"
               />
             </Card>
           </Col>
@@ -366,8 +373,8 @@ class DowntimeContainer extends Component {
 
 DowntimeContainer.propTypes = {
   params: PropTypes.object,
-  doRequestAlarm: PropTypes.func,
-  alarmData: PropTypes.array,
+  doRequestDowntime: PropTypes.func,
+  downtimeData: PropTypes.array,
 };
 
 const mapStateToProps = (state) => {
@@ -378,5 +385,5 @@ const mapStateToProps = (state) => {
 
 export default connect(
   mapStateToProps,
-  { doRequestAlarm },
+  { doRequestDowntime },
 )(DowntimeContainer);

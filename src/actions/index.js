@@ -265,7 +265,6 @@ export const doRequestSummaryTable = (passProps) => {
 };
 
 export const doRequestOutput = (passProps) => {
-  console.log(moment().format('M/D'));
   const countryName = passProps.countryName;
   const factoryName = passProps.factoryName;
   const plantName = passProps.plantName;
@@ -289,7 +288,6 @@ export const doRequestOutput = (passProps) => {
     `&timeUnit="${timeUnit}"`;
   if (timeUnit === 'hour') fetchUrl += `&date="${date}"`;
   else fetchUrl +=`&startDate="${startDate}"&endDate="${endDate}"`
-    console.log('ssss', fetchUrl);
 
   if (equipmentName !== undefined) {
     return (dispatch) => {
@@ -344,9 +342,6 @@ export const doRequestOutput = (passProps) => {
       .then(checkStatus)
       .then(parseJSON)
       .then((outputData) => {
-        _.map(outputData.payload, (value, key) => {
-          console.log('vvvv', );
-        });
         dispatch({
           type: types.ADMIN_OUTPUT_CHART_SUCCESS,
           outputData: outputData.payload,
@@ -371,7 +366,6 @@ export const doRequestOutput = (passProps) => {
 }
 
 export const doRequestAlarm = (passProps) => {
-  console.log(passProps);
   const countryName = passProps.countryName;
   const factoryName = passProps.factoryName;
   const plantName = passProps.plantName;
@@ -497,6 +491,95 @@ export const doRequestAlarm = (passProps) => {
         });
       });
     })
+  }
+}
+
+export const doRequestDowntime = (passProps) => {
+  const countryName = passProps.countryName;
+  const factoryName = passProps.factoryName;
+  const plantName = passProps.plantName;
+  const lineName =  passProps.lineName;
+  const timeZone = passProps.timeZone;
+  const timeUnit = passProps.actionType;
+  const date = passProps.date;
+  const startDate = passProps.startTime;
+  const endDate = passProps.endTime;
+
+  return (dispatch) => {
+    dispatch({
+      type: types.ADMIN_DOWNTIME_CHART_REQUEST,
+    })
+    fetch(`${serverConfig.url}/v0/list/equipmentsOfLine`+
+      `?countryName="${countryName}"`+
+      `&factoryName="${factoryName}"`+
+      `&plantName="${plantName}"`+
+      `&lineName="${lineName}"`
+    ).then(checkStatus)
+    .then(parseJSON)
+    .then((data) => {
+      let sortedData = [];
+      _.map(data.equipments, (value, key) => {
+        let equipmentName = value.split('-')[0];
+        let equipmentSerial = value.split('-')[1];
+        let fetchUrl = `${serverConfig.url}/v0/get/alarm`+
+          `?countryName="${countryName}"`+
+          `&factoryName="${factoryName}"`+
+          `&plantName="${plantName}"`+
+          `&lineName="${lineName}"`+
+          `&equipmentName="${equipmentName}"`+
+          `&equipmentSerial="${equipmentSerial}"`+
+          `&timeZone="${timeZone}"`+
+          `&timeUnit="${timeUnit}"`;
+        if (timeUnit === 'hour') fetchUrl += `&date="${date}"`;
+        else fetchUrl +=`&startDate="${startDate}"&endDate="${endDate}"`
+
+        fetch(fetchUrl)
+        .then(checkStatus)
+        .then(parseJSON)
+        .then((downtimeData) => {
+          if (_.isEmpty(downtimeData.payload)) {
+            dispatch({
+              type: types.ADMIN_DOWNTIME_CHART_SUCCESS,
+              downtimeData: [],
+            });
+          }
+
+          // desperate the empty data by count
+          let currentCount = 0;
+          let alarmDataCount = 0;
+          if(downtimeData.payload.status) alarmDataCount = Object.keys(downtimeData.payload.status).length;
+
+          _.map(downtimeData.payload.status, (alarmValue, alarmKey) => {
+            currentCount += 1;
+            if (alarmValue.totalAlarmTime) {
+              let rebuildObj = {};
+              _.map(alarmValue, (innerValue, innerKey) => {
+                if (innerKey === 'description') rebuildObj.description = innerValue.description.en;
+                else rebuildObj[innerKey] = innerValue;
+              });
+              rebuildObj.alarmCode = alarmKey;
+              rebuildObj.equipmentName = value;
+              sortedData.push(rebuildObj);
+            }
+            // XXX(jasonHsu): bug - press many times date and month will show ict only
+            if (alarmDataCount === currentCount && data.equipments.length === key + 1) {
+              sortedData = _.sortBy(sortedData, [(data) => { return data.count }]).reverse();
+              dispatch({
+                type: types.ADMIN_DOWNTIME_CHART_SUCCESS,
+                downtimeData: sortedData,
+              });
+            }
+          });
+        });
+      });
+    })
+    .catch((err) => {
+      console.log('sss', err);
+      dispatch({
+        type: types.ADMIN_DOWNTIME_CHART_FAILURE,
+        downtimeData: [],
+      });
+    });
   }
 }
 
