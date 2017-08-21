@@ -5,6 +5,13 @@ const initialState = {
 
 const admin = (state = initialState, action) => {
   switch (action.type) {
+    case types.ADMIN_MACHINE_NAME_REQUEST:
+    case types.ADMIN_MACHINE_NAME_SUCCESS:
+    case types.ADMIN_MACHINE_NAME_FAILURE:
+      return {
+        ...state,
+        ...action,
+      }
     case types.ADMIN_OVERVIEW_TABLE_REQUEST:
     case types.ADMIN_OVERVIEW_TABLE_SUCCESS:
     case types.ADMIN_OVERVIEW_TABLE_FAILURE:

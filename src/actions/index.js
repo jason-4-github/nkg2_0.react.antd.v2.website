@@ -3,14 +3,7 @@ import moment from 'moment';
 import _ from 'lodash';
 
 import * as types from '../constants/actionTypes';
-
-// TODO(S.C.) => url need to be changed as production
-const serverConfig = {
-  url: 'http://Lmsr175.calcomp.co.th:3000/apis',
-  // url: 'http://172.21.37.5:5001/apis',
-  // url: 'http://127.0.0.1:5001/apis',
-  // url: 'http://10.5.82.105:3000/apis',
-};
+import serverConfig from './../constants/ipConfig.json';
 
 function checkStatus(response) {
   if (response.status >= 200 && response.status < 300) {
@@ -23,6 +16,40 @@ function checkStatus(response) {
 
 function parseJSON(response) {
   return response.json();
+}
+
+export const doRequestMachineName = (passProps) => {
+  const countryName = passProps.countryName;
+  const factoryName = passProps.factoryName;
+  const plantName = passProps.plantName;
+  const lineName =  passProps.lineName;
+
+  return (dispatch) => {
+    dispatch({
+      type: types.ADMIN_MACHINE_NAME_REQUEST,
+    })
+    fetch(`${serverConfig.url}/v0/list/equipmentsOfLine`+
+      `?countryName="${countryName}"`+
+      `&factoryName="${factoryName}"`+
+      `&plantName="${plantName}"`+
+      `&lineName="${lineName}"`
+    )
+    .then(checkStatus)
+    .then(parseJSON)
+    .then((data) => {
+      console.log(data.equipments);
+      dispatch({
+        type: types.ADMIN_MACHINE_NAME_SUCCESS,
+        machineName: data.equipments,
+      });
+    })
+    .catch(() => {
+      dispatch({
+        type: types.ADMIN_MACHINE_NAME_FAILURE,
+        machineName: [],
+      });
+    });
+  }
 }
 
 export const doRequestOverviewTable = (passProps) => {
@@ -69,6 +96,13 @@ export const doRequestOverviewTable = (passProps) => {
         .then((outputData) => {
           // outputData: { success, payload: { id, time, okQuantity, ngQuantity } };
           const compareDate = moment().format('M/D');
+
+          // let output default 0;
+          if (_.isEmpty(outputData.payload)) {
+            dataObj.okQuantity = 0;
+            dataObj.ngQuantity = 0;
+            dataObj.inputQuantity = 0;
+          }
           _.map(outputData.payload, (outputValue) => {
             if (outputValue.time === compareDate) {
               dataObj.okQuantity = outputValue.okQuantity;
@@ -118,46 +152,6 @@ export const doRequestOverviewTable = (passProps) => {
       dispatch({
         type: types.ADMIN_OVERVIEW_TABLE_FAILURE,
         overviewTableData: [],
-      });
-    });
-  }
-}
-
-export const doRequestCount = (passProps) => {
-  const countryName = passProps.countryName;
-  const factoryName = passProps.factoryName;
-  const plantName = passProps.plantName;
-  const lineName =  passProps.lineName;
-  const equipmentName = passProps.equipmentName;
-  const equipmentSerial = passProps.equipmentSerial;
-  const timeZone = passProps.timeZone;
-
-  return (dispatch) => {
-    dispatch({
-      type: types.ADMIN_COUNT_REQUEST,
-    })
-    fetch(`${serverConfig.url}/v0/get/output`+
-      `?countryName=${countryName}`+
-      `&factoryName=${factoryName}`+
-      `&plantName=${plantName}`+
-      `&lineName=${lineName}`+
-      `&equipmentName=${equipmentName}`+
-      `&equipmentSerial=${equipmentSerial}`+
-      `&timeZone=${timeZone}`
-    )
-    .then(checkStatus)
-    .then(parseJSON)
-    .then((data) => {
-      dispatch({
-        type: types.ADMIN_COUNT_SUCCESS,
-        countData: data,
-      });
-    })
-    .catch((err) => {
-      console.log('sss', err);
-      dispatch({
-        type: types.ADMIN_COUNT_FAILURE,
-        countData: [],
       });
     });
   }

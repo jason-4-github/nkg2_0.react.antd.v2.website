@@ -87,7 +87,12 @@ class OutputContainer extends Component {
     doRequestOutput(defaultobjs);
   }
   generateChart(data, actionType) {
-    if (!data) { return []; }
+    if (_.isEmpty(data)) return(
+      <div>
+        <div className="emptyDiv" />
+        <h3>Oops! No information yet!</h3>
+      </div>
+    );
 
     // determine the animate active or not
     const actionTypeSplit = actionType.split('_');
@@ -249,13 +254,15 @@ class OutputContainer extends Component {
                 </Row>
               }
             >
-              { outputData !== undefined && !requestSpin
-                ? this.generateChart(outputData, type)
-                : <div className="defaultChartDiv">
-                    <div className="emptyDiv" />
-                    <Spin />
-                  </div>
-              }
+              <Col span={24} className="chartCol">
+                { outputData !== undefined && !requestSpin
+                  ? this.generateChart(outputData, type)
+                  : <div className="defaultChartDiv">
+                      <div className="emptyDiv" />
+                      <Spin />
+                    </div>
+                }
+              </Col>
             </Card>
           </Col>
           <Col span={24} className="col">

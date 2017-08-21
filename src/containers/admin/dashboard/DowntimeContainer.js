@@ -10,6 +10,7 @@ import PropTypes from 'prop-types';
 import { downtimeColumns } from './../../../constants/tableColumns';
 import { doRequestDowntime } from '../../../actions';
 import SelectMenu from './../../../components/SelectMenu';
+import timeFormat from './../../../utils/timeFormat';
 
 const { MonthPicker } = DatePicker;
 
@@ -103,7 +104,7 @@ class DowntimeContainer extends Component {
         arr.push({
           no: keyCount,
           machineName: d.equipmentName,
-          downTime: moment().startOf('day').seconds(d.totalAlarmTime/1000).format('HH:mm:ss'),
+          downTime: timeFormat(d.totalAlarmTime),
         });
         keyCount += 1;
       }
@@ -112,7 +113,12 @@ class DowntimeContainer extends Component {
     return arr;
   }
   generateChart(data, actionType) {
-    if (!data) { return []; }
+    if (_.isEmpty(data)) return(
+      <div>
+        <div className="emptyDiv" />
+        <h3>Oops! No information yet!</h3>
+      </div>
+    );
 
     const { barChartDesperate } = this.state;
     const dataArrs = [];
@@ -191,6 +197,14 @@ class DowntimeContainer extends Component {
     })
   }
   generatePieChart(data, handleChartClick) {
+    // return words if no data
+    if (_.isEmpty(data)) return(
+      <div>
+        <div className="emptyDiv" />
+        <h3>Oops! No information yet!</h3>
+      </div>
+    );
+
     const arr = [];
     _.map(data, (d, idx) => {
       if (d.totalAlarmTime > 0) {
@@ -309,6 +323,10 @@ class DowntimeContainer extends Component {
     const { filterValue, chartData, barChartDesperate } = this.state;
     const actionTypeSplit = type.split('_');
     const requestSpin = actionTypeSplit[3] === 'REQUEST' || false;
+
+    const timeOptions = ['Hour', 'Date', 'Month'];
+    const alarmTitle = filterValue.charAt(0).toUpperCase() + filterValue.slice(1);
+
     return (
       <div id="downtime-container">
         <Row gutter={10}>
@@ -319,42 +337,35 @@ class DowntimeContainer extends Component {
                 <Row>
                   <Col span={12}>
                     <h3 className="leftWord">
-                    { filterValue.charAt(0).toUpperCase() + filterValue.slice(1) }
+                    { alarmTitle }
                     <b style={{ paddingLeft: '10px' }}>[可點擊圓餅圖以呈現Alarm資料]</b>
                     </h3>
                   </Col>
                   <Col span={12} className="rightWord">
-                    <SelectMenu options={['Hour', 'Date', 'Month']} styleName="selectDateType" onChangeFunc={this.onFilterChange} container="downtime" />
+                    <SelectMenu options={timeOptions} styleName="selectDateType" onChangeFunc={this.onFilterChange} container="downtime" />
                     { this.renderPicker() }
                   </Col>
                 </Row>
               }
             >
-            <Col span={12}>
-              { downtimeData !== undefined && !requestSpin
-                ? this.generatePieChart(downtimeData, this.handleChartClick)
-                : <div className="defaultChartDiv">
-                    <div className="emptyDiv" />
-                    <Spin />
-                  </div>
-              }
-            </Col>
-            <Col span={12}>
-              { downtimeData !== undefined && !requestSpin
-                ? this.generateChart(barChartDesperate ? isBarChartUpdate : chartData , type)
-                : <div className="defaultChartDiv">
-                    <div className="emptyDiv" />
-                    <Spin />
-                  </div>
-              }
-            </Col>
-              {/* { downtimeData !== undefined && !requestSpin
-                ? this.generateChart(downtimeData, type)
-                : <div className="defaultChartDiv">
-                    <div className="emptyDiv" />
-                    <Spin />
-                  </div>
-              } */}
+              <Col span={12} className="chartCol">
+                { downtimeData !== undefined && !requestSpin
+                  ? this.generatePieChart(downtimeData, this.handleChartClick)
+                  : <div className="defaultChartDiv">
+                      <div className="emptyDiv" />
+                      <Spin />
+                    </div>
+                }
+              </Col>
+              <Col span={12} className="chartCol">
+                { downtimeData !== undefined && !requestSpin
+                  ? this.generateChart(barChartDesperate ? isBarChartUpdate : chartData , type)
+                  : <div className="defaultChartDiv">
+                      <div className="emptyDiv" />
+                      <Spin />
+                    </div>
+                }
+              </Col>
             </Card>
           </Col>
           <Col span={24} className="col">
@@ -362,6 +373,7 @@ class DowntimeContainer extends Component {
               <Table
                 dataSource={this.generateTableDataSource(downtimeData)}
                 columns={downtimeColumns}
+                size="small"
               />
             </Card>
           </Col>

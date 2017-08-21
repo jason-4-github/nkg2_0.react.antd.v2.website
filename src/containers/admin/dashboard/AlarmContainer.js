@@ -8,8 +8,9 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 
 import { alarmColumns } from './../../../constants/tableColumns';
-import { doRequestAlarm } from '../../../actions';
+import { doRequestAlarm, doRequestMachineName } from '../../../actions';
 import SelectMenu from './../../../components/SelectMenu';
+import timeFormat from './../../../utils/timeFormat';
 
 const { MonthPicker } = DatePicker;
 
@@ -35,8 +36,16 @@ class AlarmContainer extends Component {
     this.selectMenuOnChange = this.selectMenuOnChange.bind(this);
   }
   componentDidMount() {
-    const date = moment().format('YYYY-MM-DD');
-    this.doSearch('hour', date);
+    const countryName = this.props.params.country;
+    const factoryName = this.props.params.factory;
+    const plantName = this.props.params.plant;
+    const lineName = this.props.params.line;
+    /* eslint-disable no-shadow */
+    const { doRequestMachineName } = this.props;
+    /* eslint-enable no-shadow */
+
+    this.doSearch('hour', this.state.dateString);
+    doRequestMachineName({countryName, factoryName, plantName, lineName});
   }
 
   onFilterChange(e) {
@@ -90,7 +99,7 @@ class AlarmContainer extends Component {
   // process data for table
   generateTableDataSource(data) {
     if (!data) return;
-    // TODO(jasonHsu): time need to modify if total time > 24 hours
+
     const arr = [];
     let keyCount = 1;
     _.map(data, (d, idx) => {
@@ -101,7 +110,7 @@ class AlarmContainer extends Component {
           alarmCode: d.alarmCode,
           alarmDescription: d.description,
           count: d.count,
-          alarmTime: moment().startOf('day').seconds(d.totalAlarmTime/1000).format('HH:mm:ss'),
+          alarmTime: timeFormat(d.totalAlarmTime),
         });
         keyCount += 1;
       }
@@ -110,7 +119,12 @@ class AlarmContainer extends Component {
     return arr;
   }
   generateChart(data, actionType) {
-    if (!data) { return []; }
+    if (_.isEmpty(data)) return(
+      <div>
+        <div className="emptyDiv" />
+        <h3>Oops! No information yet!</h3>
+      </div>
+    );
 
     // determine the animate active or not
     const actionTypeSplit = actionType.split('_');
@@ -222,20 +236,27 @@ class AlarmContainer extends Component {
   selectMenuOnChange(e){
     const { filterValue, dateString, monthDropdownValue } = this.state;
     this.doSearch(filterValue, filterValue === 'month' ? monthDropdownValue : dateString , e);
-    this.setState({machineName: e});
+    this.setState({ machineName: e });
   }
   render() {
-    const { alarmData, type } = this.props;
+    const { alarmData, type, machineName } = this.props;
     const { filterValue } = this.state;
 
     const actionTypeSplit = type.split('_');
     const requestSpin = actionTypeSplit[3] === 'REQUEST' || false;
+    const timeOptions = ['Hour', 'Date', 'Month'];
+    const alarmTitle = filterValue.charAt(0).toUpperCase() + filterValue.slice(1);
 
     return (
       <div id="alarm-container">
         <Row gutter={10}>
           <Col span={24} className="rightWord">
-            <SelectMenu options={['ICT-2', 'ICT-1']} styleName="ictRouterSelect" onChangeFunc={this.selectMenuOnChange} container="alarm" />
+            <SelectMenu
+              options={machineName}
+              styleName="ictRouterSelect"
+              onChangeFunc={this.selectMenuOnChange}
+              container="alarm"
+            />
           </Col>
           <Col span={24} className="col chartRow">
             <Card
@@ -243,24 +264,29 @@ class AlarmContainer extends Component {
               title={
                 <Row>
                   <Col span={12}>
-                    <h3 className="leftWord">
-                    { filterValue.charAt(0).toUpperCase() + filterValue.slice(1) }
-                    </h3>
+                    <h3 className="leftWord">{ alarmTitle }</h3>
                   </Col>
                   <Col span={12} className="rightWord">
-                    <SelectMenu options={['Hour', 'Date', 'Month']} styleName="selectDateType" onChangeFunc={this.onFilterChange} container="alarm" />
+                    <SelectMenu
+                      options={timeOptions}
+                      styleName="selectDateType"
+                      onChangeFunc={this.onFilterChange}
+                      container="alarm"
+                    />
                     { this.renderPicker() }
                   </Col>
                 </Row>
               }
             >
-              { alarmData !== undefined && !requestSpin
-                ? this.generateChart(alarmData, type)
-                : <div className="defaultChartDiv">
-                    <div className="emptyDiv" />
-                    <Spin />
-                  </div>
-              }
+              <Col span={24} className="chartCol">
+                { alarmData !== undefined && !requestSpin
+                  ? this.generateChart(alarmData, type)
+                  : <div className="defaultChartDiv">
+                      <div className="emptyDiv" />
+                      <Spin />
+                    </div>
+                }
+              </Col>
             </Card>
           </Col>
           <Col span={24} className="col">
@@ -292,5 +318,5 @@ const mapStateToProps = (state) => {
 
 export default connect(
   mapStateToProps,
-  { doRequestAlarm },
+  { doRequestAlarm, doRequestMachineName },
 )(AlarmContainer);

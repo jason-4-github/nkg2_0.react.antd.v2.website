@@ -5,37 +5,17 @@ import _ from 'lodash';
 import PropTypes from 'prop-types';
 
 import { realtimeColumns } from './../../../constants/tableColumns';
-import {
-  doRequestOverviewAlarmInfo,
-  doRequestCount,
-} from '../../../actions';
+import { doRequestOverviewAlarmInfo } from '../../../actions';
 import { wdRealTimePosition, seagateRealTimePositioin } from '../../../utils/realTimePosition';
 
 class RealtimeContainer extends Component {
   componentDidMount() {
     /* eslint-disable no-shadow */
-    const {
-      doRequestOverviewAlarmInfo,
-      doRequestCount,
-    } = this.props;
+    const { doRequestOverviewAlarmInfo } = this.props;
     /* eslint-enable no-shadow */
-    const countryName = this.props.params.country;
-    const factoryName = this.props.params.factory;
-    const plantName = this.props.params.plant;
     const lineName = this.props.params.line;
-    // (XXX): need modify more common sense
-    const equipmentName = 'ict';
-    const timeZone = 'Asia/Bangkok';
 
     doRequestOverviewAlarmInfo({ line: lineName });
-    doRequestCount({
-      countryName,
-      factoryName,
-      plantName,
-      lineName,
-      equipmentName,
-      timeZone
-    });
   }
   displayRealTimeImage(realTimeData) {
     const line = this.props.params.line;
@@ -355,7 +335,6 @@ class RealtimeContainer extends Component {
 RealtimeContainer.propTypes = {
   params: PropTypes.object,
   doRequestOverviewAlarmInfo: PropTypes.func,
-  doRequestCount: PropTypes.func,
   overviewInformationData: PropTypes.array,
   overviewAlarmData: PropTypes.array,
   type: PropTypes.string,
@@ -370,8 +349,5 @@ const mapStateToProps = (state) => {
 
 export default connect(
   mapStateToProps,
-  {
-    doRequestOverviewAlarmInfo,
-    doRequestCount,
-  },
+  { doRequestOverviewAlarmInfo },
 )(RealtimeContainer);

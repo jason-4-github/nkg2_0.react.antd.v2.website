@@ -9,6 +9,7 @@ import { doRequestForFactoryMap } from './../../../actions';
 
 /* eslint-disable import/extensions */
 import styleJson from '../../../constants/stylesConfig.json';
+import serverIP from './../../../constants/ipConfig.json';
 /* eslint-enable import/extensions */
 
 const factory = styleJson.factoryMap.factory;
@@ -180,7 +181,7 @@ class FactoryMapContainer extends Component {
     const { imageUrl } = this.state;
     return (
       <div id="factory-map-container">
-        <div className="factory-map-image" style={{ backgroundImage: `url(http://Lmsr175.calcomp.co.th:3000${imageUrl})` }}>
+        <div className="factory-map-image" style={{ backgroundImage: `url(${serverIP.socketio}${imageUrl})` }}>
           <div style={{ height: emptyDivHeight }} />
           <Row className="row" type="flex" justify="center" align="middle">
             <div className="factory-map-mask" style={{ width: '100%' }} />

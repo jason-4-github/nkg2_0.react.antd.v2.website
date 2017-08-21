@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 
 import { overviewColumns } from './../../../constants/tableColumns';
 import { doRequestOverviewTable } from '../../../actions';
+import timeFormat from './../../../utils/timeFormat';
 
 class OverviewContainer extends Component {
   constructor(props) {
@@ -64,7 +65,7 @@ class OverviewContainer extends Component {
     const now = moment(moment().toArray());
     const timeDiff = now.diff(startRunningTime);
 
-    const time = moment().startOf('day').seconds(timeDiff/1000).format('HH:mm:ss');
+    const time = timeFormat(timeDiff);
     const informationTitle = ['Line Name', 'Connection', 'Running Time'];
     const informationIcon = ['idcard', 'share-alt', 'clock-circle-o'];
     const informationContent = [line, connectStatus, time];
@@ -105,10 +106,10 @@ class OverviewContainer extends Component {
       arr.push({
         key: idx,
         machineName: d.equipmentName,
-        runningTime: moment().startOf('day').seconds(timeDiff/1000).format('HH:mm:ss'),
+        runningTime: timeFormat(timeDiff),
         idleTime: '00:00:00',
-        alarmTime: moment().startOf('day').seconds(d.alarmTime / 1000).format('HH:mm:ss'),
-        recordTime: moment().startOf('day').seconds(timeDiff/1000).format('HH:mm:ss'),
+        alarmTime: timeFormat(d.alarmTime),
+        recordTime: timeFormat(timeDiff),
         inputCount: d.okQuantity + d.ngQuantity,
         outputOkCount: d.okQuantity,
         outputNgCount: d.ngQuantity,

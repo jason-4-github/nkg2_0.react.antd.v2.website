@@ -11,6 +11,7 @@ import DowntimeContainer from './dashboard/DowntimeContainer';
 import AlarmContainer from './dashboard/AlarmContainer';
 
 import background from './../../styles/body.jpg';
+import serverIP from './../../constants/ipConfig.json';
 
 const { Header, Sider, Content } = Layout;
 const { TabPane } = Tabs;
@@ -41,7 +42,7 @@ class AdminContainer extends Component {
     // TODO(JasonHsu): IP need to modify
     this.state = {
       collapsed: false,
-      socket: io('http://Lmsr175.calcomp.co.th:3000'),
+      socket: io(serverIP.socketio),
       socketData: [],
     };
 
