@@ -1,4 +1,4 @@
 {
-  "url": "http://Lmsr175.calcomp.co.th:3000/apis",
+  "url": "http://Lmsr175.calcomp.co.th:3000/apis/v0/",
   "socketio": "http://Lmsr175.calcomp.co.th:3000"
 }

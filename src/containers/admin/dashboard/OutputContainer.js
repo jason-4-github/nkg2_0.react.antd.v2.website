@@ -62,8 +62,8 @@ class OutputContainer extends Component {
     const month = type !== 'month' ? onChangeValue.split('-')[1] : onChangeValue;
     const lastDay = moment(`${year}-${month}`, "YYYY-MM").daysInMonth();
     const date = onChangeValue
-    const startTime = type === 'month' ? `${year}-01-01` : `${year}-${month}-01`;
-    const endTime = type === 'month' ? `${year}-12-31` : `${year}-${month}-${lastDay}`;
+    const startDate = type === 'month' ? `${year}-01-01` : `${year}-${month}-01`;
+    const endDate = type === 'month' ? `${year}-12-31` : `${year}-${month}-${lastDay}`;
 
     // (XXX): need modify more common sense
     const timeZone = 'Asia/Bangkok';
@@ -79,9 +79,9 @@ class OutputContainer extends Component {
       equipmentSerial,
       timeZone,
       date,
-      startTime,
-      endTime,
-      actionType: type,
+      startDate,
+      endDate,
+      timeUnit: type,
     }
 
     doRequestOutput(defaultobjs);
@@ -228,7 +228,6 @@ class OutputContainer extends Component {
   render() {
     const { outputData, type } = this.props;
     const { filterValue } = this.state;
-    console.log('sssssss', this.state.machineName);
     const actionTypeSplit = type.split('_');
     const requestSpin = actionTypeSplit[3] === 'REQUEST' || false;
     return (

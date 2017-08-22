@@ -73,8 +73,8 @@ class DowntimeContainer extends Component {
     const month = type !== 'month' ? onChangeValue.split('-')[1] : onChangeValue;
     const lastDay = moment(`${year}-${month}`, "YYYY-MM").daysInMonth();
     const date = onChangeValue
-    const startTime = type === 'month' ? `${year}-01-01` : `${year}-${month}-01`;
-    const endTime = type === 'month' ? `${year}-12-31` : `${year}-${month}-${lastDay}`;
+    const startDate = type === 'month' ? `${year}-01-01` : `${year}-${month}-01`;
+    const endDate = type === 'month' ? `${year}-12-31` : `${year}-${month}-${lastDay}`;
 
 
     // (XXX): need modify more common sense
@@ -87,9 +87,9 @@ class DowntimeContainer extends Component {
       lineName,
       timeZone,
       date,
-      startTime,
-      endTime,
-      actionType: type,
+      startDate,
+      endDate,
+      timeUnit: type,
     }
 
     doRequestDowntime(defaultobjs);
