@@ -1,22 +1,12 @@
 import React, { Component } from 'react';
 import { Row, Col, Card, Table } from 'antd';
-import { connect } from 'react-redux';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 
 import { realtimeColumns } from './../../../constants/tableColumns';
-import { doRequestOverviewAlarmInfo } from '../../../actions';
 import { wdRealTimePosition, seagateRealTimePositioin } from '../../../utils/realTimePosition';
 
 class RealtimeContainer extends Component {
-  componentDidMount() {
-    /* eslint-disable no-shadow */
-    const { doRequestOverviewAlarmInfo } = this.props;
-    /* eslint-enable no-shadow */
-    const lineName = this.props.params.line;
-
-    doRequestOverviewAlarmInfo({ line: lineName });
-  }
   displayRealTimeImage(realTimeData) {
     const line = this.props.params.line;
     // const { wdRealTimePosition, seagateRealTimePositioin } = this.props;
@@ -296,7 +286,7 @@ class RealtimeContainer extends Component {
     return arr;
   }
   render() {
-    const { overviewAlarmData, socketData } = this.props;
+    const { socketData } = this.props;
     const line = this.props.params.line;
     const noDataLines = ['P4', 'G7', 'G8', 'G9', 'CELL2', 'CELL3'];
     return (
@@ -321,7 +311,7 @@ class RealtimeContainer extends Component {
           <Col span={24} className="col">
             <Card>
               <Table
-                dataSource={this.generateTableDataSource(overviewAlarmData)}
+                dataSource={this.generateTableDataSource([])}
                 columns={realtimeColumns}
               />
             </Card>
@@ -334,20 +324,8 @@ class RealtimeContainer extends Component {
 
 RealtimeContainer.propTypes = {
   params: PropTypes.object,
-  doRequestOverviewAlarmInfo: PropTypes.func,
-  overviewInformationData: PropTypes.array,
-  overviewAlarmData: PropTypes.array,
   type: PropTypes.string,
   socketData: PropTypes.array,
 };
 
-const mapStateToProps = (state) => {
-  return {
-    ...state.admin,
-  };
-};
-
-export default connect(
-  mapStateToProps,
-  { doRequestOverviewAlarmInfo },
-)(RealtimeContainer);
+export default RealtimeContainer;

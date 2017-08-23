@@ -1,3 +1,5 @@
+@import "./common-variable.less";
+
 #overview-container {
   .col {
     padding: 5px;
@@ -14,39 +16,9 @@
         font-size: 70px;
       }
     }
-  }
-  #ictCol {
-    // text-align: center;
-    margin-bottom: 10px;
-    .productCard {
-      .cardBorder {
-        border-radius: 4px;
-        border: solid 1px;
-        padding: 15px 15px 30px;
-        background-color: white;
-        .backgroundWords {
-          font-size: 100px;
-          opacity: 0.05;
-          position: absolute;
-          top: -10px;
-          right: 10px;
-        }
-        .cardData {
-          font-size: 25px;
-        }
-        .hrLine {
-          height: 5px;
-          border: 0px;
-          border-radius: 5px;
-        }
-      }
+    .ant-table-tbody {
+      font-size: @font-size-overviewTable;
     }
-  }
-  #fctCol {
-    // border-style: groove;
-    // border-width: 1px;
-    text-align: center;
-    margin-bottom: 10px;
   }
   .smallCard {
     .informationCardDiv {
@@ -68,18 +40,6 @@
     .ant-card-body {
       padding: 0px;
       text-align: center;
-    }
-    #informationCol1 {
-      background-color: lavender;
-    }
-    #informationCol2 {
-      background-color: rgba(95, 158, 160, 0.63);
-    }
-    #informationCol3 {
-      background-color: rgba(189, 183, 107, 0.8);
-    }
-    #informationCol4 {
-      background-color: rgba(70, 130, 180, 0.64);
     }
     .overviewIcon {
       font-size: 100px;

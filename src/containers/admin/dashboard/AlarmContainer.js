@@ -250,7 +250,7 @@ class AlarmContainer extends Component {
     return (
       <div id="alarm-container">
         <Row gutter={10}>
-          <Col span={24} className="rightWord">
+          <Col span={24} className="alarmSelectMenu">
             <SelectMenu
               options={machineName}
               styleName="ictRouterSelect"

@@ -41,16 +41,16 @@ class OverviewContainer extends Component {
     if (type === 'ADMIN_OVERVIEW_INFORMATION_FAILURE') {
       return (<div> Ooops... Something Wrong. </div>);
     }
-    if (!overviewTableData) { return (<div><Spin /></div>); }
+    // if (!overviewTableData) { return (<div style={{ textAlign: 'center' }}><Spin /></div>); }
 
-    const isConnect = overviewTableData.length !== 0;
+    const isConnect = overviewTableData || false;
     const data = overviewTableData;
     const line = this.props.params.line;
     let connectStatus;
     if (!isConnect && data) {
       connectStatus = <Icon type="close-circle-o" style={{ color: 'white' }} />;
     } else if (!isConnect) {
-      connectStatus = 'offline';
+      connectStatus = <Icon type="loading" />;
     } else {
       connectStatus = <Icon type="check-circle-o" />;
     }
@@ -65,7 +65,7 @@ class OverviewContainer extends Component {
     const now = moment(moment().toArray());
     const timeDiff = now.diff(startRunningTime);
 
-    const time = timeFormat(timeDiff);
+    const time = !isConnect ? <Icon type="loading" /> : timeFormat(timeDiff);
     const informationTitle = ['Line Name', 'Connection', 'Running Time'];
     const informationIcon = ['idcard', 'share-alt', 'clock-circle-o'];
     const informationContent = [line, connectStatus, time];

@@ -29,7 +29,8 @@ export const doRequestMachineName = (passProps) => {
       `?countryName="${countryName}"`+
       `&factoryName="${factoryName}"`+
       `&plantName="${plantName}"`+
-      `&lineName="${lineName}"`
+      `&lineName="${lineName}"`+
+      `&type=alarm`
     )
     .then(checkStatus)
     .then(parseJSON)
@@ -62,7 +63,8 @@ export const doRequestOverviewTable = (passProps) => {
   let fetchBasicInfo = `?countryName="${countryName}"`+
     `&factoryName="${factoryName}"`+
     `&plantName="${plantName}"`+
-    `&lineName="${lineName}"`;
+    `&lineName="${lineName}"`+
+    `&type=output`;
   const timeUnit = ['', 'date', 'hour'];
   const fetchEquipment = `${serverConfig.url}${fetchApiName[0]}${fetchBasicInfo}`;
   const fetchOutput = `${serverConfig.url}${fetchApiName[1]}${fetchBasicInfo}&timeZone="${timeZone}"&timeUnit="${timeUnit[1]}"&startDate="${startDate}"&endDate="${endDate}"`;
@@ -269,7 +271,8 @@ export const doRequestOutput = (passProps) => {
   const fetchBasicInfo = `?countryName="${countryName}"`+
     `&factoryName="${factoryName}"`+
     `&plantName="${plantName}"`+
-    `&lineName="${lineName}"`;
+    `&lineName="${lineName}"`+
+    `&type=output`;
   const fetchEquipment = `${serverConfig.url}${fetchApiName[0]}${fetchBasicInfo}`;
   const fetchOutputWithoutEquipment =
     `${serverConfig.url}${fetchApiName[1]}${fetchBasicInfo}&timeZone="${timeZone}"&timeUnit="${timeUnit}"` +
@@ -320,7 +323,8 @@ export const doRequestAlarm = (passProps) => {
   const fetchBasicInfo = `?countryName="${countryName}"`+
     `&factoryName="${factoryName}"`+
     `&plantName="${plantName}"`+
-    `&lineName="${lineName}"`;
+    `&lineName="${lineName}"`+
+    `&type=alarm`;
   const fetchEquipment = `${serverConfig.url}${fetchApiName[0]}${fetchBasicInfo}`;
   const fetchAlarmWithoutEquipment =
     `${serverConfig.url}${fetchApiName[1]}${fetchBasicInfo}&timeZone="${timeZone}"&timeUnit="${timeUnit}"` +
@@ -387,7 +391,8 @@ export const doRequestDowntime = (passProps) => {
   const fetchBasicInfo = `?countryName="${countryName}"`+
     `&factoryName="${factoryName}"`+
     `&plantName="${plantName}"`+
-    `&lineName="${lineName}"`;
+    `&lineName="${lineName}"`+
+    `&type=alarm`;
   const fetchEquipment = `${serverConfig.url}${fetchApiName[0]}${fetchBasicInfo}`;
   const fetchDowntime = `${serverConfig.url}${fetchApiName[1]}${fetchBasicInfo}&timeZone="${timeZone}"&timeUnit="${timeUnit}` +
     ( timeUnit === 'hour' ?  `&date="${date}"` : `&startDate="${startDate}"&endDate="${endDate}"` );

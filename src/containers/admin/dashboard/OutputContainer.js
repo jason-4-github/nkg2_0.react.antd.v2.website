@@ -233,7 +233,7 @@ class OutputContainer extends Component {
     return (
       <div id="output-container">
         <Row gutter={10}>
-          <Col span={24} className="rightWord">
+          <Col span={24} className="alarmSelectMenu">
             <SelectMenu options={['ICT-2', 'ICT-1']} styleName="ictRouterSelect" onChangeFunc={this.selectMenuOnChange} container="output" />
           </Col>
           <Col span={24} className="col chartRow">
