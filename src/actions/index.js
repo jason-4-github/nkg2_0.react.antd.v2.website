@@ -1,6 +1,7 @@
 import 'whatwg-fetch';
 import moment from 'moment';
 import _ from 'lodash';
+import promise from 'bluebird';
 
 import * as types from '../constants/actionTypes';
 import serverConfig from './../constants/ipConfig.json';
@@ -60,15 +61,13 @@ export const doRequestOverviewTable = (passProps) => {
 
   // fetch url config
   let fetchApiName = ['list/equipmentsOfLine', 'get/output', 'get/alarm'];
-  let fetchBasicInfo = `?countryName="${countryName}"`+
-    `&factoryName="${factoryName}"`+
-    `&plantName="${plantName}"`+
-    `&lineName="${lineName}"`+
-    `&type=output`;
+  let fetchBasicInfo = `?countryName="${countryName}"&factoryName="${factoryName}"`+
+    `&plantName="${plantName}"&lineName="${lineName}"&type=output`;
   const timeUnit = ['', 'date', 'hour'];
   const fetchEquipment = `${serverConfig.url}${fetchApiName[0]}${fetchBasicInfo}`;
   const fetchOutput = `${serverConfig.url}${fetchApiName[1]}${fetchBasicInfo}&timeZone="${timeZone}"&timeUnit="${timeUnit[1]}"&startDate="${startDate}"&endDate="${endDate}"`;
   const fetchAlarm = `${serverConfig.url}${fetchApiName[2]}${fetchBasicInfo}&timeZone="${timeZone}"&timeUnit="${timeUnit[2]}"&date="${startDate}"`;
+  const outputAlarmUrl = [fetchOutput, fetchAlarm];
 
   return (dispatch) => {
     dispatch({
@@ -81,83 +80,64 @@ export const doRequestOverviewTable = (passProps) => {
         // data: { success, equipments };
         const collectData = [];
         const multipleFetch = [];
+        let dataObj = {};
 
-        _.map(data.equipments, (equipmentsValue) => {
-          const dataObj = {};
+        _.map(data.equipments, (equipmentsValue, key) => {
           const equipmentDeconstruct = equipmentsValue.split('-');
           const equipmentName = equipmentDeconstruct[0];
           const equipmentSerial = equipmentDeconstruct[1];
-          dataObj.equipmentName = equipmentsValue;
 
-          multipleFetch.push(
-            fetch(`${fetchOutput}&equipmentName="${equipmentName}"&equipmentSerial="${equipmentSerial}"`)
-              .then(checkStatus)
-              .then(parseJSON)
-              .then((outputData) => {
-                // outputData: { success, payload: { id, time, okQuantity, ngQuantity } };
-
-                if (_.isEmpty(outputData.payload)) {
-                  dataObj.okQuantity = 0;
-                  dataObj.ngQuantity = 0;
-                  dataObj.inputQuantity = 0;
-                }
-                _.map(outputData.payload, (outputValue) => {
-                  if (outputValue.time === moment().format('M/D')) {
-                    dataObj.okQuantity = outputValue.okQuantity;
-                    dataObj.ngQuantity = outputValue.ngQuantity;
-                    dataObj.inputQuantity = outputValue.ngQuantity + outputValue.okQuantity;
-                  }
-                });
-
-                return fetch(`${fetchAlarm}&equipmentName="${equipmentName}"&equipmentSerial="${equipmentSerial}"`)
-              })
-              .then(checkStatus)
-              .then(parseJSON)
-              .then((alarmData) => {
-                // alarmData: { success, payload: { equipmentName, status: { description: { errorCode }, totalAlarmTime, count } } };
-                let totalTime = 0;
-                _.map(alarmData.payload.status, (alarmValue) => {
-                  if (alarmValue.totalAlarmTime) totalTime += alarmValue.totalAlarmTime;
-                });
-                // TODO(jasonHsu): record time need to modify
-                dataObj.alarmTime = totalTime;
-                collectData.push(dataObj);
-
-                return collectData;
-              })
-              .catch((err) => {
-                dispatch({
-                  type: types.ADMIN_OVERVIEW_TABLE_FAILURE,
-                  overviewTableData: [],
-                });
-              })
-          );
+          _.map(outputAlarmUrl, url => {
+            multipleFetch.push(
+              fetch(`${url}&equipmentName="${equipmentName}"&equipmentSerial="${equipmentSerial}"`)
+                .then(checkStatus)
+                .then(parseJSON)
+                .then(fetchData => {
+                  fetchData.equipmentName = equipmentsValue;
+                  return fetchData;
+                })
+            );
+          });
         });
 
-        Promise.all(multipleFetch)
-          .then(response => {
-            // TODO(jasonHsu): find out the reason that response have two same array
+        promise.each(multipleFetch, (items, key, length) => {
+          if (key % 2) {
+            // alarm
+            let totalTime = 0;
+            dataObj.equipmentName = items.equipmentName;
+
+            _.map(items.payload.status, alarmValue => {
+              if (alarmValue.totalAlarmTime) totalTime += alarmValue.totalAlarmTime;
+            });
+            dataObj.alarmTime = totalTime;
+            console.log(items.equipmentName)
+            collectData.push(dataObj);
+            dataObj = {};
+          } else {
+            // output
+            const todayIndex = _.findKey(items.payload, (innerItems) => { return innerItems.time === moment().format('M/D') });
+            dataObj.okQuantity = todayIndex ? items.payload[todayIndex].okQuantity : 0;
+            dataObj.ngQuantity = todayIndex ? items.payload[todayIndex].ngQuantity : 0;
+            dataObj.inputQuantity = todayIndex
+            ? items.payload[todayIndex].ngQuantity + items.payload[todayIndex].okQuantity
+            : 0;
+          }
+          if (key === multipleFetch.length - 1) {
+            console.log(key, multipleFetch.length - 1, collectData, dataObj)
             dispatch({
               type: types.ADMIN_OVERVIEW_TABLE_SUCCESS,
-              overviewTableData: response[0],
+              overviewTableData: collectData,
             });
-          })
-          .catch(err => {
-            console.log('ssskk', err);
-            dispatch({
-              type: types.ADMIN_OVERVIEW_TABLE_FAILURE,
-              overviewTableData: [],
-            });
-          })
-      })
-      .catch((err) => {
-        console.log('sss', err);
-        dispatch({
-          type: types.ADMIN_OVERVIEW_TABLE_FAILURE,
-          overviewTableData: [],
-        });
-      });
-    }
+          }
+        }).catch(err => {
+          console.log('ssskk', err);
+          dispatch({
+            type: types.ADMIN_OVERVIEW_TABLE_FAILURE,
+            overviewTableData: [],
+          });
+        })
+    });
+  }
 }
 
 export const doRequestMapConnect = (passProps) => {
@@ -344,6 +324,7 @@ export const doRequestAlarm = (passProps) => {
 
       equipmentName = data.equipments[0].split('-')[0];
       equipmentSerial = data.equipments[0].split('-')[1];
+
       return fetch(`${fetchAlarmWithoutEquipment}&equipmentName="${equipmentName}"&equipmentSerial="${equipmentSerial}"`);
     })
     .then(checkStatus)
@@ -351,6 +332,7 @@ export const doRequestAlarm = (passProps) => {
     .then((alarmData) => {
       // desperate the empty data by count
       let sortedData = [];
+      console.log(alarmData);
       _.map(alarmData.payload.status, (value, key) => {
         if (value.totalAlarmTime) {
           let rebuildObj = {};
@@ -359,7 +341,7 @@ export const doRequestAlarm = (passProps) => {
             else rebuildObj[innerKey] = innerValue;
           });
           rebuildObj.alarmCode = key;
-          rebuildObj.equipmentName = alarmData.payload.equipmentName;
+          rebuildObj.equipmentName = (`${equipmentName}-${equipmentSerial}`).toUpperCase();
           sortedData.push(rebuildObj);
         }
       });
@@ -391,64 +373,61 @@ export const doRequestDowntime = (passProps) => {
   const fetchBasicInfo = `?countryName="${countryName}"`+
     `&factoryName="${factoryName}"`+
     `&plantName="${plantName}"`+
-    `&lineName="${lineName}"`+
-    `&type=alarm`;
-  const fetchEquipment = `${serverConfig.url}${fetchApiName[0]}${fetchBasicInfo}`;
+    `&lineName="${lineName}"`;
+  const fetchEquipment = `${serverConfig.url}${fetchApiName[0]}${fetchBasicInfo}&type="alarm"`;
   const fetchDowntime = `${serverConfig.url}${fetchApiName[1]}${fetchBasicInfo}&timeZone="${timeZone}"&timeUnit="${timeUnit}` +
     ( timeUnit === 'hour' ?  `&date="${date}"` : `&startDate="${startDate}"&endDate="${endDate}"` );
 
   return (dispatch) => {
     dispatch({
       type: types.ADMIN_DOWNTIME_CHART_REQUEST,
+      downtimeData: [],
     })
     fetch(fetchEquipment)
     .then(checkStatus)
     .then(parseJSON)
     .then((data) => {
-      let sortedData = [];
       const multipleFetch = [];
       _.map(data.equipments, (value, key) => {
         let equipmentName = value.split('-')[0];
         let equipmentSerial = value.split('-')[1];
-
         multipleFetch.push(
           fetch(`${fetchDowntime}&equipmentName="${equipmentName}"&equipmentSerial="${equipmentSerial}"`)
             .then(checkStatus)
             .then(parseJSON)
-            .then((downtimeData) => {
-              if (_.isEmpty(downtimeData.payload)) {
-                dispatch({
-                  type: types.ADMIN_DOWNTIME_CHART_SUCCESS,
-                  downtimeData: [],
-                });
-              }
-
-              // construct downtime data
-              _.map(downtimeData.payload.status, (alarmValue, alarmKey) => {
-                if (alarmValue.totalAlarmTime) {
-                  let rebuildObj = {};
-                  _.map(alarmValue, (innerValue, innerKey) => {
-                    if (innerKey === 'description') rebuildObj.description = innerValue.description.en;
-                    else rebuildObj[innerKey] = innerValue;
-                  });
-                  rebuildObj.alarmCode = alarmKey;
-                  rebuildObj.equipmentName = value;
-                  sortedData.push(rebuildObj);
-                }
-              });
-
-              sortedData = _.sortBy(sortedData, [(data) => { return data.count }]).reverse();
-              return sortedData;
+            .then(data => {
+              data.payload.equipmentName = value;
+              return data;
             })
         );
       });
 
       Promise.all(multipleFetch)
       .then(response => {
-        // TODO(jasonHsu): find out the reason that response have two same array
+        let  sortedData = [];
+
+        // process data
+        _.map(response, (downtimeData) => {
+          _.map(downtimeData.payload.status, (alarmValue, alarmKey) => {
+            if (alarmValue.totalAlarmTime) {
+              let rebuildObj = {};
+              _.map(alarmValue, (innerValue, innerKey) => {
+                if (innerKey === 'description') rebuildObj.description = innerValue.description.en;
+                else rebuildObj[innerKey] = innerValue;
+              });
+              rebuildObj.alarmCode = alarmKey;
+              rebuildObj.equipmentName = downtimeData.payload.equipmentName;
+              sortedData.push(rebuildObj);
+            }
+          });
+        });
+
+        // sorted by count
+        sortedData = _.sortBy(sortedData, [(data) => { return data.count }]).reverse();
+
         dispatch({
           type: types.ADMIN_DOWNTIME_CHART_SUCCESS,
-          downtimeData: response[0],
+          downtimeData: _.isEmpty(sortedData) ? [] : sortedData,
         });
       })
       .catch((err) => {

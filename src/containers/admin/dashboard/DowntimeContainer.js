@@ -99,7 +99,15 @@ class DowntimeContainer extends Component {
     if (!data) return;
     const arr = [];
     let keyCount = 1;
-    _.map(data, (d, idx) => {
+
+    let tableData = _(data)
+      .groupBy('equipmentName')
+      .map((obj, key) => ({
+        'equipmentName': key,
+        'totalAlarmTime': _.sumBy(obj, 'totalAlarmTime') }))
+      .value();
+
+    _.map(tableData, (d, idx) => {
       if (d.totalAlarmTime) {
         arr.push({
           no: keyCount,
