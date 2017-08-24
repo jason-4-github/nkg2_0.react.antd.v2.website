@@ -86,25 +86,11 @@ export const realtimeColumns = [
   },
 ];
 
-export const overviewInformationTableColumns = [
-  {
-    title: 'Name',
-    dataIndex: 'name',
-  }, {
-    title: 'Value',
-    dataIndex: 'value',
-  },
-];
-
 export const overviewColumns = [
   {
     title: 'Machine Name',
     dataIndex: 'machineName',
     key: 'machineName',
-  }, {
-    title: 'Running Time',
-    dataIndex: 'runningTime',
-    key: 'runningTime',
   }, {
     title: 'Idle Time',
     dataIndex: 'idleTime',
@@ -129,6 +115,10 @@ export const overviewColumns = [
     title: 'Output NG Count',
     dataIndex: 'outputNgCount',
     key: 'outputNgCount',
+  }, {
+    title: 'Yield Rate',
+    dataIndex: 'yieldRate',
+    key: 'yieldRate',
   },
 ];
 
@@ -139,5 +129,18 @@ export const summarySmallTableColumns = [
   }, {
     title: 'Value',
     dataIndex: 'value',
+  },
+];
+
+export const outputNGTable = [
+  {
+    title: 'ID',
+    dataIndex: 'id',
+  }, {
+    title: 'Time',
+    dataIndex: 'time',
+  }, {
+    title: 'NG Barcodes',
+    dataIndex: 'ngBarcodes',
   },
 ];

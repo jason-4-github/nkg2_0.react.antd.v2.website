@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Row, Col, Card, DatePicker, Button, Dropdown, Menu, Icon, Spin, Table } from 'antd';
+import { Row, Col, Card, DatePicker, Button, Dropdown, Menu, Icon, Spin, Table, Modal } from 'antd';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import G2 from 'g2';
@@ -8,7 +8,7 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 
 import { doRequestOutput } from '../../../actions';
-import { outputColumns } from './../../../constants/tableColumns';
+import { outputColumns, outputNGTable } from './../../../constants/tableColumns';
 import SelectMenu from './../../../components/SelectMenu';
 
 const { MonthPicker } = DatePicker;
@@ -25,6 +25,8 @@ class OutputContainer extends Component {
       monthDropdownValue: moment().format('YYYY'),
       machineName: 'ICT-2',
       dateString: moment().format('YYYY-MM-DD'),
+      ngBarcodes: [],
+      modalVisible: true,
     };
 
     this.onDatePickerChange = this.onDatePickerChange.bind(this);
@@ -168,7 +170,48 @@ class OutputContainer extends Component {
         no: idx + 1,
         date: d.time,
         output: d.okQuantity,
-        outputNG: d.ngQuantity,
+        outputNG:
+          <div>
+            <Col span={6}>
+              {d.ngQuantity}
+            </Col>
+            { d.ngQuantity === 0
+              ? ''
+              : <Col span={18}>
+                <Icon
+                  type="search"
+                  className="searchIcon"
+                  onClick={(e) => {
+                    const tableArrs = [];
+                    _.map(d.ngBarcodes, (value, key) => {
+                      const ngTime = moment(value.recordedAt).format('YYYY-MM-DD HH:mm:ss');
+                      tableArrs.push({
+                        id: key + 1,
+                        time: ngTime,
+                        ngBarcodes: value.barcode,
+                      });
+                    })
+                    Modal.info({
+                      title: 'NG barcode',
+                      width: 700,
+                      maskClosable: true,
+                      content: (
+                        <Table
+                          dataSource={tableArrs}
+                          style={{ paddingTop: '20px' }}
+                          columns={outputNGTable}
+                          pagination={false}
+                          scroll={{ y: 350 }}
+                          size="large"
+                        />
+                      ),
+                      okText:'ok!',
+                      onOk() {},
+                    })
+                  }}
+                />
+              </Col>}
+          </div>,
         yieldRate: `${yr}%`,
       });
     });

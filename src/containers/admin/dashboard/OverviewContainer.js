@@ -106,13 +106,13 @@ class OverviewContainer extends Component {
       arr.push({
         key: idx,
         machineName: d.equipmentName,
-        runningTime: timeFormat(timeDiff),
         idleTime: '00:00:00',
         alarmTime: timeFormat(d.alarmTime),
         recordTime: timeFormat(timeDiff),
         inputCount: d.okQuantity + d.ngQuantity,
         outputOkCount: d.okQuantity,
         outputNgCount: d.ngQuantity,
+        yieldRate: d.yieldRate,
       });
     });
 

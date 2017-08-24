@@ -5,6 +5,10 @@
     padding: 5px;
     .ant-table-tbody {
       font-size: @font-size-commomTable;
+      .anticon-search {
+        cursor: pointer;
+        &:hover { color: brown }
+      }
     }
   }
   .alarmSelectMenu {
@@ -51,5 +55,20 @@
   }
   .info-padding {
     padding-left: 15px;
+  }
+}
+
+// for output modal style
+.ant-modal-wrap  {
+  .ant-table-thead {
+    th {
+      text-align: center;
+    }
+  }
+  .ant-table-body {
+    font-size: 15px;
+    tr {
+      text-align: center;
+    }
   }
 }

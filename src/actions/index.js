@@ -56,8 +56,7 @@ export const doRequestOverviewTable = (passProps) => {
 
   // params config
   const timeZone = 'Asia/Bangkok';
-  const startDate = moment().format('YYYY-MM-DD');
-  const endDate = startDate;
+  const date = moment().format('YYYY-MM-DD');
 
   // fetch url config
   let fetchApiName = ['list/equipmentsOfLine', 'get/output', 'get/alarm'];
@@ -65,8 +64,8 @@ export const doRequestOverviewTable = (passProps) => {
     `&plantName="${plantName}"&lineName="${lineName}"&type=output`;
   const timeUnit = ['', 'date', 'hour'];
   const fetchEquipment = `${serverConfig.url}${fetchApiName[0]}${fetchBasicInfo}`;
-  const fetchOutput = `${serverConfig.url}${fetchApiName[1]}${fetchBasicInfo}&timeZone="${timeZone}"&timeUnit="${timeUnit[1]}"&startDate="${startDate}"&endDate="${endDate}"`;
-  const fetchAlarm = `${serverConfig.url}${fetchApiName[2]}${fetchBasicInfo}&timeZone="${timeZone}"&timeUnit="${timeUnit[2]}"&date="${startDate}"`;
+  const fetchOutput = `${serverConfig.url}${fetchApiName[1]}${fetchBasicInfo}&timeZone="${timeZone}"`;
+  const fetchAlarm = `${serverConfig.url}${fetchApiName[2]}${fetchBasicInfo}&timeZone="${timeZone}"&timeUnit="${timeUnit[2]}"&date="${date}"`;
   const outputAlarmUrl = [fetchOutput, fetchAlarm];
 
   return (dispatch) => {
@@ -102,7 +101,7 @@ export const doRequestOverviewTable = (passProps) => {
 
         promise.each(multipleFetch, (items, key, length) => {
           if (key % 2) {
-            // alarm
+            // alarm data-processed
             let totalTime = 0;
             dataObj.equipmentName = items.equipmentName;
 
@@ -110,20 +109,22 @@ export const doRequestOverviewTable = (passProps) => {
               if (alarmValue.totalAlarmTime) totalTime += alarmValue.totalAlarmTime;
             });
             dataObj.alarmTime = totalTime;
-            console.log(items.equipmentName)
             collectData.push(dataObj);
             dataObj = {};
           } else {
-            // output
-            const todayIndex = _.findKey(items.payload, (innerItems) => { return innerItems.time === moment().format('M/D') });
-            dataObj.okQuantity = todayIndex ? items.payload[todayIndex].okQuantity : 0;
-            dataObj.ngQuantity = todayIndex ? items.payload[todayIndex].ngQuantity : 0;
-            dataObj.inputQuantity = todayIndex
-            ? items.payload[todayIndex].ngQuantity + items.payload[todayIndex].okQuantity
-            : 0;
+            // output data-processed
+            const okCount = items.okQuantity ? items.okQuantity : 0;
+            const ngCount = items.ngQuantity ? items.ngQuantity : 0;
+            const inputCount = okCount + ngCount !== 0 ? okCount + ngCount : 0;
+            const yieldRate = inputCount !== 0
+              ? ((okCount / (okCount + ngCount)) * 100).toFixed(2)
+              : '0.00';
+            dataObj.okQuantity = okCount;
+            dataObj.ngQuantity = ngCount;
+            dataObj.inputQuantity = inputCount;
+            dataObj.yieldRate = yieldRate + '%';
           }
           if (key === multipleFetch.length - 1) {
-            console.log(key, multipleFetch.length - 1, collectData, dataObj)
             dispatch({
               type: types.ADMIN_OVERVIEW_TABLE_SUCCESS,
               overviewTableData: collectData,
