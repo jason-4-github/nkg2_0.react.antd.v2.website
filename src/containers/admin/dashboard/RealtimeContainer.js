@@ -42,16 +42,25 @@ class RealtimeContainer extends Component {
 
     // XXX(JasonHsu): need to modify
     // ict-1 -> robot-1 -> ict-2 -> robot-2 -> router-1 -> robot-3
-    const robotName = ['ict-1', 'ict-2', 'router-1'];
-    const lightColorClass = ['greenLight', 'yellowLight', 'redLight'];
+    const robotName = ['ict-1', 'ict-2', 'router-1', 'conveyor-1', 'conveyor-2'];
+    const machineColorClass = ['greenLight', 'yellowLight', 'redLight'];
+    const sensorColorClass = ['greenLight', 'noLight'];
     const p6Arrs = [];
     if(line === 'P6') {
       _.map(robotName, (value, key) => {
+        const isConveyor = value.split('-')[0] === 'conveyor' ? true : false;
         _.map(realTimeData, (innerValue, innerKey) => {
-          if (value === innerValue.equipmentName) {
-            p6Arrs.push(lightColorClass[innerValue.machineStatus - 1]);
-            p6Arrs.push(lightColorClass[innerValue.robot.machineStatus - 1]);
+          if (value === innerValue.equipmentName && isConveyor) {
+            _.map(innerValue.sensorStatus, (sensorValue) => {
+              _.map(sensorValue, (smallSensor) => {
+                p6Arrs.push(sensorColorClass[smallSensor ? 0 : 1]);
+              });
+            });
+          } else if (value === innerValue.equipmentName) {
+            p6Arrs.push(machineColorClass[innerValue.machineStatus - 1]);
+            p6Arrs.push(machineColorClass[innerValue.robot.machineStatus - 1]);
           }
+
         });
       });
       return seagateRealTimePositioin(p6Arrs, line);

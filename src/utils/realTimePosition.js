@@ -1,5 +1,6 @@
 import React from 'react';
 import { Icon } from 'antd';
+import _ from 'lodash';
 
 export const wdRealTimePosition = (divs, line) => {
   const robotArm1 = ['rotate(0deg)', 'rotate(-66deg)'];
@@ -1321,6 +1322,35 @@ export const wdRealTimePosition = (divs, line) => {
 
 export const seagateRealTimePositioin = (divs, line) => {
   if (line === 'P6') {
+
+    // conveyor:  left -> right => 1 -> 2
+    // sensor: left -> right => 7 -> 0    up -> down => 1 -> 0
+    const conveyor = [];
+    const conveyor1Machine = ['conveyor1_0', 'conveyor1_1', 'conveyor2_0', 'conveyor2_1'];
+    const conveyorHeight = ['315px', '260px'];
+    const conveyorWidth = [524, 670];
+    const conveyorTimesCount = [8, 7];
+    let sensorCount = 0;
+
+    _.map(conveyor1Machine, (value, index) => {
+      const machineCount2Index = index < 2 ? 0 : 1;
+      _.times(conveyorTimesCount[machineCount2Index], (key) => {
+        sensorCount += 1;
+        conveyor.push(
+          <div
+            className={divs[5 + sensorCount] || 'noLight'}
+            key={value+key}
+            style={{
+              top: conveyorHeight[index % 2],
+              left: (conveyorWidth[machineCount2Index] - (key * 20)) + 'px',
+              borderRadius: '25px',
+              width: '10px',
+              height: '10px',
+            }}
+          />
+        );
+      })
+    });
     return (
       <div>
         <img
@@ -1389,6 +1419,7 @@ export const seagateRealTimePositioin = (divs, line) => {
         >
           robot3
         </div>
+        {conveyor}
       </div>
     );
   } else if (line === 'P4') {
