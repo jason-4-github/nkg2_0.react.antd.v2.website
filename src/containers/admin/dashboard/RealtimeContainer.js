@@ -56,6 +56,7 @@ class RealtimeContainer extends Component {
 
         _.map(realTimeData, (innerValue, innerKey) => {
           if (value === innerValue.equipmentName && isConveyor) {
+            if (value === 'ict-1') innerValue.machineStatus = 2;
             _.map(innerValue.sensorStatus, (sensorValue, sensorKey) => {
 
 
@@ -65,13 +66,13 @@ class RealtimeContainer extends Component {
                 // console.log(value, sensorValue[7], smallSensorCount)
                 p6Arrs.push(sensorColorClass[smallSensor ? 0 : 1]);
                 if (value === 'conveyor-1'  && sensorValue[7] === true && smallSensorCount === 7) {
-                  isRouterRobotRotate = isRouterRobotRotate || true;
+                  isRouterRobotRotate = isRouterRobotRotate !== undefined ? isRouterRobotRotate : true;
                 }
                 if ((value === 'conveyor-2' && sensorKey === 0) && sensorValue[0] === true && smallSensorCount === 0) {
-                  isIct2RobotRotate = isIct2RobotRotate || true;
+                  isIct2RobotRotate = isIct2RobotRotate !== undefined ? isIct2RobotRotate : true;
                 }
                 if (value === 'conveyor-2' && sensorKey === 1 && sensorValue[0] === true && smallSensorCount === 0) {
-                  isIct1RobotRotate = isIct1RobotRotate || true;
+                  isIct1RobotRotate = isIct1RobotRotate !== undefined ? isIct1RobotRotate : true;
                 }
                 smallSensorCount += 1;
               });
@@ -85,13 +86,14 @@ class RealtimeContainer extends Component {
                 p6Arrs.push(sensorColorClass[smallSensor ? 0 : 1]);
               });
             });
-            if (robotMachineStatus === 2 || robotMachineStatus === 3) isRouterRobotRotate = false
+            if (robotMachineStatus !== 1) isRouterRobotRotate = false
             // p6Arrs.push(isRouterRobotRotate);
           } else if (value === innerValue.equipmentName) {
             let robotMachineStatus = innerValue.robot.machineStatus;
+            let machineStatus = innerValue.machineStatus;
             p6Arrs.push(machineColorClass[innerValue.machineStatus - 1]);
             p6Arrs.push(machineColorClass[innerValue.robot.machineStatus - 1]);
-            if (robotMachineStatus === 2 || robotMachineStatus === 3){
+            if (robotMachineStatus !== 1 || machineStatus !== 1) {
               if (value === 'ict-1') isIct1RobotRotate = false;
               else if (value === 'ict-2') isIct2RobotRotate = false;
             }
@@ -320,14 +322,33 @@ class RealtimeContainer extends Component {
     );
   }
   generateTableDataSource(data) {
+    const dataAnalysis = [];
+    _.map(data, (value, key) => {
+      _.map(value.errorCodes, (errorValue) => {
+        let dataObj = {};
+        dataObj.machineName = value.equipmentName;
+        dataObj.errorCode = errorValue.errorCode;
+        dataObj.errorDescription = errorValue.description.en;
+        dataAnalysis.push(dataObj);
+      });
+      if (value.robot) {
+        _.map(value.robot.errorCodes, (robotErrorValue) => {
+          let dataObj = {};
+          dataObj.machineName = value.robot.robotName;
+          dataObj.errorCode = robotErrorValue.errorCode;
+          dataObj.errorDescription = robotErrorValue.description.en;
+          dataAnalysis.push(dataObj);
+        });
+      }
+    });
     const arr = [];
-    _.map(data, (d, idx) => {
+    _.map(dataAnalysis, (d, idx) => {
       arr.push({
         key: idx,
-        no: d.MachineNo,
-        machineName: d.MachineName,
-        errorCode: d.AlarmCode,
-        errorDescription: d.AlarmDescription,
+        no: idx + 1,
+        machineName: d.machineName,
+        errorCode: d.errorCode,
+        errorDescription: d.errorDescription,
       });
     });
 
@@ -359,7 +380,7 @@ class RealtimeContainer extends Component {
           <Col span={24} className="col">
             <Card>
               <Table
-                dataSource={this.generateTableDataSource([])}
+                dataSource={this.generateTableDataSource(socketData)}
                 columns={realtimeColumns}
               />
             </Card>

@@ -106,11 +106,11 @@ class OverviewContainer extends Component {
         machineName: d.equipmentName,
         idleTime: '00:00:00',
         alarmTime: timeFormat(d.alarmTime),
+        movementRate: 0 + '%',
         inputCount: d.okQuantity + d.ngQuantity,
         outputOkCount: d.okQuantity,
         outputNgCount: d.ngQuantity,
         yieldRate: d.yieldRate,
-        movementRate: 0 + '%',
       });
     });
 

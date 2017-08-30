@@ -100,6 +100,10 @@ export const overviewColumns = [
     dataIndex: 'alarmTime',
     key: 'alarmTime',
   }, {
+    title: '稼動率',
+    dataIndex: 'movementRate',
+    key: 'movementRate',
+  }, {
     title: '輸入總量',
     dataIndex: 'inputCount',
     key: 'inputCount',
@@ -115,10 +119,6 @@ export const overviewColumns = [
     title: '良率',
     dataIndex: 'yieldRate',
     key: 'yieldRate',
-  }, {
-    title: '稼動率',
-    dataIndex: 'movementRate',
-    key: 'movementRate',
   },
 ];
 
