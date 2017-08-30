@@ -76,8 +76,7 @@ class AdminContainer extends Component {
     const plant = this.props.params.plant;
     const line = this.props.params.line;
 
-    const sideMenuParams = [line, 'ICT', 'FCT', 'Buffer CV', 'Transfer CV',
-      'ICT CV', 'FCT CV', 'Transfer Robot', 'Cleaner', 'TIM', 'DMC'];
+    const sideMenuParams = [line, 'ICT', 'ICT CV', 'Router'];
     return (
       <div id="admin-container">
         <Layout>

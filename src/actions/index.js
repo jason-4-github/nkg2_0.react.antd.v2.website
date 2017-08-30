@@ -61,12 +61,12 @@ export const doRequestOverviewTable = (passProps) => {
   // fetch url config
   let fetchApiName = ['list/equipmentsOfLine', 'get/output', 'get/alarm'];
   let fetchBasicInfo = `?countryName="${countryName}"&factoryName="${factoryName}"`+
-    `&plantName="${plantName}"&lineName="${lineName}"&type=output`;
+    `&plantName="${plantName}"&lineName="${lineName}"&type=alarm`;
   const timeUnit = ['', 'date', 'hour'];
   const fetchEquipment = `${serverConfig.url}${fetchApiName[0]}${fetchBasicInfo}`;
   const fetchOutput = `${serverConfig.url}${fetchApiName[1]}${fetchBasicInfo}&timeZone="${timeZone}"`;
   const fetchAlarm = `${serverConfig.url}${fetchApiName[2]}${fetchBasicInfo}&timeZone="${timeZone}"&timeUnit="${timeUnit[2]}"&date="${date}"`;
-  const outputAlarmUrl = [fetchOutput, fetchAlarm];
+  const outputAlarmUrl = [fetchAlarm, fetchOutput];
 
   return (dispatch) => {
     dispatch({
@@ -101,17 +101,6 @@ export const doRequestOverviewTable = (passProps) => {
 
         promise.each(multipleFetch, (items, key, length) => {
           if (key % 2) {
-            // alarm data-processed
-            let totalTime = 0;
-            dataObj.equipmentName = items.equipmentName;
-
-            _.map(items.payload.status, alarmValue => {
-              if (alarmValue.totalAlarmTime) totalTime += alarmValue.totalAlarmTime;
-            });
-            dataObj.alarmTime = totalTime;
-            collectData.push(dataObj);
-            dataObj = {};
-          } else {
             // output data-processed
             const okCount = items.okQuantity ? items.okQuantity : 0;
             const ngCount = items.ngQuantity ? items.ngQuantity : 0;
@@ -123,6 +112,18 @@ export const doRequestOverviewTable = (passProps) => {
             dataObj.ngQuantity = ngCount;
             dataObj.inputQuantity = inputCount;
             dataObj.yieldRate = yieldRate + '%';
+            collectData.push(dataObj);
+            dataObj = {};
+
+          } else {
+            // alarm data-processed
+            let totalTime = 0;
+            dataObj.equipmentName = items.equipmentName;
+
+            _.map(items.payload.status, alarmValue => {
+              if (alarmValue.totalAlarmTime) totalTime += alarmValue.totalAlarmTime;
+            });
+            dataObj.alarmTime = totalTime;
           }
           if (key === multipleFetch.length - 1) {
             dispatch({

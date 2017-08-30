@@ -46,12 +46,16 @@ class OverviewContainer extends Component {
     const isConnect = overviewTableData || false;
     const data = overviewTableData;
     const line = this.props.params.line;
+    let connectionBgColor;
     let connectStatus;
     if (!isConnect && data) {
+      connectionBgColor = '#d26269';
       connectStatus = <Icon type="close-circle-o" style={{ color: 'white' }} />;
     } else if (!isConnect) {
+      connectionBgColor = '#b9b6b6';
       connectStatus = <Icon type="loading" />;
     } else {
+      connectionBgColor = '#43b4ae';
       connectStatus = <Icon type="check-circle-o" />;
     }
 
@@ -66,10 +70,10 @@ class OverviewContainer extends Component {
     const timeDiff = now.diff(startRunningTime);
 
     const time = !isConnect ? <Icon type="loading" /> : timeFormat(timeDiff);
-    const informationTitle = ['Line Name', 'Connection', 'Running Time'];
+    const informationTitle = ['產線名稱', '連線狀況', '連線時間'];
     const informationIcon = ['idcard', 'share-alt', 'clock-circle-o'];
-    const informationContent = [line, connectStatus, time];
-    const informationCardColors = ['#3598dc', '#e7505a', '#32c5d2'];
+    const informationContent = ['Seagate - ' + line, connectStatus, time];
+    const informationCardColors = ['#588ebd', connectionBgColor, '#8674a6'];
 
     _.map(informationTitle, (value, key) => {
       informationTableData.push(
@@ -95,12 +99,6 @@ class OverviewContainer extends Component {
   generateTableDataSource(data) {
     if (!data) { return ([]); }
     const arr = [];
-    // set the running time
-    const startRunningTimeObj = moment().toObject();
-    const startRunningTime = moment([startRunningTimeObj.years, startRunningTimeObj.months,
-        startRunningTimeObj.date, 8, 0, 0, 0]);
-    const now = moment(moment().toArray());
-    const timeDiff = now.diff(startRunningTime);
 
     _.map(data, (d, idx) => {
       arr.push({
@@ -108,11 +106,11 @@ class OverviewContainer extends Component {
         machineName: d.equipmentName,
         idleTime: '00:00:00',
         alarmTime: timeFormat(d.alarmTime),
-        recordTime: timeFormat(timeDiff),
         inputCount: d.okQuantity + d.ngQuantity,
         outputOkCount: d.okQuantity,
         outputNgCount: d.ngQuantity,
         yieldRate: d.yieldRate,
+        movementRate: 0 + '%',
       });
     });
 

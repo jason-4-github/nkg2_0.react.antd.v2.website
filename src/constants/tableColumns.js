@@ -1,26 +1,26 @@
 export const alarmColumns = [
   {
-    title: 'No',
+    title: '編號',
     dataIndex: 'no',
     key: 'no',
   }, {
-    title: 'Machine Name',
+    title: '機台名稱',
     dataIndex: 'machineName',
     key: 'machineName',
   }, {
-    title: 'Alarm Code',
+    title: '異常代碼',
     dataIndex: 'alarmCode',
     key: 'alarmCode',
   }, {
-    title: 'Alarm Description',
+    title: '異常訊息',
     dataIndex: 'alarmDescription',
     key: 'alarmDescription',
   }, {
-    title: 'Count',
+    title: '異常數量',
     dataIndex: 'count',
     key: 'count',
   }, {
-    title: 'Alarm Time',
+    title: '異常時間',
     dataIndex: 'alarmTime',
     key: 'alarmTime',
   }
@@ -28,15 +28,15 @@ export const alarmColumns = [
 
 export const downtimeColumns = [
   {
-    title: 'No',
+    title: '編號',
     dataIndex: 'no',
     key: 'no',
   }, {
-    title: 'Machine Name',
+    title: '機台名稱',
     dataIndex: 'machineName',
     key: 'machineName',
   }, {
-    title: 'Down Time',
+    title: '停工時間',
     dataIndex: 'downTime',
     key: 'downTime',
   },
@@ -44,23 +44,23 @@ export const downtimeColumns = [
 
 export const outputColumns = [
   {
-    title: 'No',
+    title: '編號',
     dataIndex: 'no',
     key: 'no',
   }, {
-    title: 'Date',
+    title: '時間',
     dataIndex: 'date',
     key: 'date',
   }, {
-    title: 'Output',
+    title: '輸出數量',
     dataIndex: 'output',
     key: 'output',
   }, {
-    title: 'Output NG',
+    title: '不良數量',
     dataIndex: 'outputNG',
     key: 'outputNG',
   }, {
-    title: 'Yield Rate',
+    title: '良率',
     dataIndex: 'yieldRate',
     key: 'yieldRate',
   },
@@ -68,19 +68,19 @@ export const outputColumns = [
 
 export const realtimeColumns = [
   {
-    title: 'No',
+    title: '編號',
     dataIndex: 'no',
     key: 'no',
   }, {
-    title: 'Machine Name',
+    title: '機台名稱',
     dataIndex: 'machineName',
     key: 'machineName',
   }, {
-    title: 'Error Code',
+    title: '異常代碼',
     dataIndex: 'errorCode',
     key: 'errorCode',
   }, {
-    title: 'Error Description',
+    title: '異常訊息',
     dataIndex: 'errorDescription',
     key: 'errorDescription',
   },
@@ -88,37 +88,37 @@ export const realtimeColumns = [
 
 export const overviewColumns = [
   {
-    title: 'Machine Name',
+    title: '機台名稱',
     dataIndex: 'machineName',
     key: 'machineName',
   }, {
-    title: 'Idle Time',
+    title: '閒置時間',
     dataIndex: 'idleTime',
     key: 'idleTime',
   }, {
-    title: 'Alarm Time',
+    title: '異常時間',
     dataIndex: 'alarmTime',
     key: 'alarmTime',
   }, {
-    title: 'Record Time',
-    dataIndex: 'recordTime',
-    key: 'recordTime',
-  }, {
-    title: 'Input Count',
+    title: '輸入總量',
     dataIndex: 'inputCount',
     key: 'inputCount',
   }, {
-    title: 'Output OK Count',
+    title: '優良數量',
     dataIndex: 'outputOkCount',
     key: 'outputOkCount',
   }, {
-    title: 'Output NG Count',
+    title: '不良數量',
     dataIndex: 'outputNgCount',
     key: 'outputNgCount',
   }, {
-    title: 'Yield Rate',
+    title: '良率',
     dataIndex: 'yieldRate',
     key: 'yieldRate',
+  }, {
+    title: '稼動率',
+    dataIndex: 'movementRate',
+    key: 'movementRate',
   },
 ];
 
@@ -134,13 +134,13 @@ export const summarySmallTableColumns = [
 
 export const outputNGTable = [
   {
-    title: 'ID',
+    title: '編號',
     dataIndex: 'id',
   }, {
-    title: 'Time',
+    title: '時間',
     dataIndex: 'time',
   }, {
-    title: 'NG Barcodes',
+    title: '不良品條碼',
     dataIndex: 'ngBarcodes',
   },
 ];

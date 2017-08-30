@@ -1322,7 +1322,9 @@ export const wdRealTimePosition = (divs, line) => {
 
 export const seagateRealTimePositioin = (divs, line) => {
   if (line === 'P6') {
-
+    const routerRobotClassName = ['robotNoMove', 'robotUpToRight'];
+    const ict1RobotClassName = ['robotNoMove', 'robotUpToDownReverse'];
+    const ict2RobotClassName = ['robotNoMove', 'robotUpToDown'];
     // conveyor:  left -> right => 1 -> 2
     // sensor: left -> right => 7 -> 0    up -> down => 1 -> 0
     const conveyor = [];
@@ -1338,7 +1340,7 @@ export const seagateRealTimePositioin = (divs, line) => {
         sensorCount += 1;
         conveyor.push(
           <div
-            className={divs[5 + sensorCount] || 'noLight'}
+            className={divs[9 + sensorCount] || 'noLight'}
             key={value+key}
             style={{
               top: conveyorHeight[index % 2],
@@ -1372,8 +1374,8 @@ export const seagateRealTimePositioin = (divs, line) => {
         <div
           className={divs[1] || 'noLight'}
           style={{
-            top: '210px',
-            left: '625px',
+            top: '220px',
+            left: '687px',
             borderRadius: '25px',
           }}
         >
@@ -1392,8 +1394,8 @@ export const seagateRealTimePositioin = (divs, line) => {
         <div
           className={divs[3] || 'noLight'}
           style={{
-            top: '325px',
-            left: '625px',
+            top: '323px',
+            left: '687px',
             borderRadius: '25px',
           }}
         >
@@ -1412,14 +1414,84 @@ export const seagateRealTimePositioin = (divs, line) => {
         <div
           className={divs[5] || 'noLight'}
           style={{
-            top: '265px',
-            left: '333px',
+            top: '313px',
+            left: '306px',
             borderRadius: '25px',
           }}
         >
           robot3
         </div>
+        <div
+          className={divs[6] || 'noLight'}
+          style={{
+            top: '218px',
+            left: '331px',
+            borderRadius: '25px',
+            width: '10px',
+            height: '10px',
+          }}
+        />
+        <div
+          className={divs[7] || 'noLight'}
+          style={{
+            top: '235px',
+            left: '331px',
+            borderRadius: '25px',
+            width: '10px',
+            height: '10px',
+          }}
+        />
+        <div
+          className={divs[8] || 'noLight'}
+          style={{
+            top: '218px',
+            left: '369px',
+            borderRadius: '25px',
+            width: '10px',
+            height: '10px',
+          }}
+        />
+        <div
+          className={divs[9] || 'noLight'}
+          style={{
+            top: '235px',
+            left: '369px',
+            borderRadius: '25px',
+            width: '10px',
+            height: '10px',
+          }}
+        />
         {conveyor}
+        <img
+          alt=""
+          className={ict1RobotClassName[divs[40] ? 1 : 0]}
+          style={{
+            top: "173px",
+            left: "629px",
+            position: "absolute",
+          }}
+          src="/images/p6Robot.png"
+        />
+        <img
+          alt=""
+          className={ict2RobotClassName[divs[41] ? 1 : 0]}
+          style={{
+            top: "289px",
+            left: "629px",
+            position: 'absolute',
+          }}
+          src="/images/p6Robot.png"
+        />
+        <img
+          alt=""
+          className={routerRobotClassName[divs[42] ? 1 : 0]}
+          style={{
+            top: "226px",
+            left: "341px",
+            position: 'absolute',
+          }}
+          src="/images/p6Robot.png"
+        />
       </div>
     );
   } else if (line === 'P4') {

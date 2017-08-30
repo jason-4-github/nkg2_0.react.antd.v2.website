@@ -7,7 +7,7 @@ import createG2 from 'g2-react';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 
-import { doRequestOutput } from '../../../actions';
+import { doRequestOutput, doRequestMachineName } from '../../../actions';
 import { outputColumns, outputNGTable } from './../../../constants/tableColumns';
 import SelectMenu from './../../../components/SelectMenu';
 
@@ -37,8 +37,17 @@ class OutputContainer extends Component {
     this.selectMenuOnChange = this.selectMenuOnChange.bind(this);
   }
   componentDidMount() {
+    const countryName = this.props.params.country;
+    const factoryName = this.props.params.factory;
+    const plantName = this.props.params.plant;
+    const lineName = this.props.params.line;
+    /* eslint-disable no-shadow */
+    const { doRequestMachineName } = this.props;
+    /* eslint-enable no-shadow */
+
     const date = moment().format('YYYY-MM-DD');
     this.doSearch('hour', date);
+    doRequestMachineName({countryName, factoryName, plantName, lineName});
   }
   onFilterChange(e) {
     const filterDate = moment().format(e === 'month' ? 'YYYY' : 'YYYY-MM-DD');
@@ -269,7 +278,7 @@ class OutputContainer extends Component {
     this.setState({machineName: e});
   }
   render() {
-    const { outputData, type } = this.props;
+    const { outputData, type, machineName } = this.props;
     const { filterValue } = this.state;
     const actionTypeSplit = type.split('_');
     const requestSpin = actionTypeSplit[3] === 'REQUEST' || false;
@@ -277,7 +286,7 @@ class OutputContainer extends Component {
       <div id="output-container">
         <Row gutter={10}>
           <Col span={24} className="alarmSelectMenu">
-            <SelectMenu options={['ICT-2', 'ICT-1']} styleName="ictRouterSelect" onChangeFunc={this.selectMenuOnChange} container="output" />
+            <SelectMenu options={machineName} styleName="ictRouterSelect" onChangeFunc={this.selectMenuOnChange} container="output" />
           </Col>
           <Col span={24} className="col chartRow">
             <Card
@@ -337,5 +346,6 @@ const mapStateToProps = (state) => {
 
 export default connect(
   mapStateToProps,
-  { doRequestOutput },
+  { doRequestOutput,
+    doRequestMachineName },
 )(OutputContainer);

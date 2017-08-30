@@ -111,6 +111,133 @@
   }
 }
 
+@-webkit-keyframes upToRight {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(90deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+@-moz-keyframes upToRight {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(90deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+@keyframes upToRight {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(90deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@-webkit-keyframes upToLeft {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-90deg);
+  }
+}
+@-moz-keyframes upToLeft {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-90deg);
+  }
+}
+@keyframes upToLeft {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-90deg);
+  }
+}
+
+@-webkit-keyframes upToDown {
+  0% {
+    transform: rotate(180deg);
+  }
+  50% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(180deg);
+  }
+}
+@-moz-keyframes upToDown {
+  0% {
+    transform: rotate(180deg);
+  }
+  50% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(180deg);
+  }
+}
+@keyframes upToDown {
+  0% {
+    transform: rotate(180deg);
+  }
+  50% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(180deg);
+  }
+}
+
+@-webkit-keyframes upToDownReverse {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-180deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+@-moz-keyframes upToDownReverse {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-180deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+@keyframes upToDownReverse {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-180deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
 #realtime-container {
   .col {
     padding: 5px;
@@ -211,6 +338,61 @@
       -moz-border-radius: 3px / 3px;
       -webkit-border-radius: 3px 3px;
       border-radius: 3px / 3px;
+    }
+    .robotUpToRight {
+      position: absolute;
+      z-index: 5;
+      width: 35px;
+      height: 72px;
+      transform-origin: 50% 85%;
+      animation: upToRight 1s linear infinite;
+      -ms-animation: upToRight 1s linear infinite;
+      -webkit-animation: upToRight 1s linear infinite;
+      -moz-animation: upToRight 1s linear infinite;
+      -o-animation: upToRight 1s linear infinite;
+    }
+    .robotUpToLeft {
+      position: absolute;
+      z-index: 5;
+      width: 35px;
+      height: 72px;
+      transform-origin: 50% 85%;
+      animation: upToLeft 1s linear infinite;
+      -ms-animation: upToLeft 1s linear infinite;
+      -webkit-animation: upToLeft 1s linear infinite;
+      -moz-animation: upToLeft 1s linear infinite;
+      -o-animation: upToLeft 1s linear infinite;
+    }
+    .robotUpToDown {
+      position: absolute;
+      z-index: 5;
+      width: 35px;
+      height: 72px;
+      transform-origin: 50% 85%;
+      animation: upToDown 1s linear infinite;
+      -ms-animation: upToDown 1s linear infinite;
+      -webkit-animation: upToDown 1s linear infinite;
+      -moz-animation: upToDown 1s linear infinite;
+      -o-animation: upToDown 1s linear infinite;
+      animation-fill-mode:forwards;
+    }
+    .robotUpToDownReverse {
+      position: absolute;
+      z-index: 5;
+      width: 35px;
+      height: 72px;
+      transform-origin: 50% 85%;
+      animation: upToDownReverse 1s linear infinite;
+      -ms-animation: upToDownReverse 1s linear infinite;
+      -webkit-animation: upToDownReverse 1s linear infinite;
+      -moz-animation: upToDownReverse 1s linear infinite;
+      -o-animation: upToDownReverse 1s linear infinite;
+    }
+    .robotNoMove {
+      position: absolute;
+      z-index: 5;
+      width: 35px;
+      height: 72px;
     }
   }
 }

@@ -41,28 +41,67 @@ class RealtimeContainer extends Component {
     // 1: running 2: idle 3; alarm
 
     // XXX(JasonHsu): need to modify
-    // ict-1 -> robot-1 -> ict-2 -> robot-2 -> router-1 -> robot-3
+    // ict-1 -> robot-1 -> ict-2 -> robot-2 -> router-1 -> robot-3 -> router 4個點
     const robotName = ['ict-1', 'ict-2', 'router-1', 'conveyor-1', 'conveyor-2'];
     const machineColorClass = ['greenLight', 'yellowLight', 'redLight'];
     const sensorColorClass = ['greenLight', 'noLight'];
     const p6Arrs = [];
+    let isRouterRobotRotate;
+    let isIct1RobotRotate;
+    let isIct2RobotRotate;
     if(line === 'P6') {
       _.map(robotName, (value, key) => {
         const isConveyor = value.split('-')[0] === 'conveyor' ? true : false;
+        const isRouter = value.split('-')[0] === 'router' ? true : false;
+
         _.map(realTimeData, (innerValue, innerKey) => {
           if (value === innerValue.equipmentName && isConveyor) {
+            _.map(innerValue.sensorStatus, (sensorValue, sensorKey) => {
+
+
+              let smallSensorCount = 0;
+
+              _.map(sensorValue, (smallSensor) => {
+                // console.log(value, sensorValue[7], smallSensorCount)
+                p6Arrs.push(sensorColorClass[smallSensor ? 0 : 1]);
+                if (value === 'conveyor-1'  && sensorValue[7] === true && smallSensorCount === 7) {
+                  isRouterRobotRotate = isRouterRobotRotate || true;
+                }
+                if ((value === 'conveyor-2' && sensorKey === 0) && sensorValue[0] === true && smallSensorCount === 0) {
+                  isIct2RobotRotate = isIct2RobotRotate || true;
+                }
+                if (value === 'conveyor-2' && sensorKey === 1 && sensorValue[0] === true && smallSensorCount === 0) {
+                  isIct1RobotRotate = isIct1RobotRotate || true;
+                }
+                smallSensorCount += 1;
+              });
+            });
+          } else if (value === innerValue.equipmentName && isRouter) {
+            let robotMachineStatus = innerValue.robot.machineStatus;
+            p6Arrs.push(machineColorClass[innerValue.machineStatus - 1]);
+            p6Arrs.push(machineColorClass[robotMachineStatus - 1]);
             _.map(innerValue.sensorStatus, (sensorValue) => {
               _.map(sensorValue, (smallSensor) => {
                 p6Arrs.push(sensorColorClass[smallSensor ? 0 : 1]);
               });
             });
+            if (robotMachineStatus === 2 || robotMachineStatus === 3) isRouterRobotRotate = false
+            // p6Arrs.push(isRouterRobotRotate);
           } else if (value === innerValue.equipmentName) {
+            let robotMachineStatus = innerValue.robot.machineStatus;
             p6Arrs.push(machineColorClass[innerValue.machineStatus - 1]);
             p6Arrs.push(machineColorClass[innerValue.robot.machineStatus - 1]);
+            if (robotMachineStatus === 2 || robotMachineStatus === 3){
+              if (value === 'ict-1') isIct1RobotRotate = false;
+              else if (value === 'ict-2') isIct2RobotRotate = false;
+            }
           }
 
         });
       });
+      p6Arrs.push(isIct1RobotRotate);
+      p6Arrs.push(isIct2RobotRotate);
+      p6Arrs.push(isRouterRobotRotate);
       return seagateRealTimePositioin(p6Arrs, line);
     }
 
