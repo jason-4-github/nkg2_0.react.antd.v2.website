@@ -72,12 +72,12 @@ class OutputContainer extends Component {
     const year = type !== 'month' ? onChangeValue.split('-')[0] : onChangeValue;
     const month = type !== 'month' ? onChangeValue.split('-')[1] : onChangeValue;
     const lastDay = moment(`${year}-${month}`, "YYYY-MM").daysInMonth();
-    const date = onChangeValue
-    const startDate = type === 'month' ? `${year}-01-01` : `${year}-${month}-01`;
-    const endDate = type === 'month' ? `${year}-12-31` : `${year}-${month}-${lastDay}`;
+    let startDate = type === 'month' ? `${year}-01-01` : `${year}-${month}-01`;
+    let endDate = type === 'month' ? `${year}-12-31` : `${year}-${month}-${lastDay}`;
+    startDate = type === 'hour' ? onChangeValue : startDate;
+    endDate = type === 'hour' ? onChangeValue : endDate;
 
     // (XXX): need modify more common sense
-    const timeZone = 'Asia/Bangkok';
     const equipmentName = !machineName ? machineName : machineName.split('-')[0];
     const equipmentSerial = !machineName ? machineName : machineName.split('-')[1];
 
@@ -88,8 +88,6 @@ class OutputContainer extends Component {
       lineName,
       equipmentName,
       equipmentSerial,
-      timeZone,
-      date,
       startDate,
       endDate,
       timeUnit: type,

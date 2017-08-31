@@ -96,7 +96,7 @@ export const overviewColumns = [
     dataIndex: 'waitingTime',
     key: 'waitingTime',
   }, {
-    title: '停工時間',
+    title: '停機時間',
     dataIndex: 'downTime',
     key: 'downTime',
   }, {

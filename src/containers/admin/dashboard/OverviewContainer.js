@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Row, Col, Card, Spin, Table, Icon } from 'antd';
+import { Row, Col, Card, Spin, Table, Icon, DatePicker } from 'antd';
 import { connect } from 'react-redux';
 import _ from 'lodash';
 import moment from 'moment';
@@ -14,8 +14,10 @@ class OverviewContainer extends Component {
     super(props);
     this.state = {
       machineName: '',
+      dateString: moment().format('YYYY-MM-DD'),
     }
     this.selectMenuOnChange = this.selectMenuOnChange.bind(this);
+    this.onDatePickerChange = this.onDatePickerChange.bind(this);
   }
   componentDidMount() {
     /* eslint-disable no-shadow */
@@ -26,13 +28,17 @@ class OverviewContainer extends Component {
     const factoryName = this.props.params.factory;
     const plantName = this.props.params.plant;
     const lineName = this.props.params.line;
+    const { dateString } = this.state;
     // (XXX): need modify more common sense
 
     doRequestOverviewTable({
       countryName,
       factoryName,
       plantName,
-      lineName});
+      lineName,
+      startDate: dateString,
+      endDate: dateString,
+    });
   }
   displayInformationData(overviewTableData, type) {
     if (type === 'ADMIN_OVERVIEW_INFORMATION_REQUEST') {
@@ -96,10 +102,31 @@ class OverviewContainer extends Component {
   selectMenuOnChange(e){
     this.setState({machineName: e});
   }
+  onDatePickerChange(date, dateString) {
+
+    /* eslint-disable no-shadow */
+    const { doRequestOverviewTable } = this.props;
+    /* eslint-enable no-shadow */
+
+    const countryName = this.props.params.country;
+    const factoryName = this.props.params.factory;
+    const plantName = this.props.params.plant;
+    const lineName = this.props.params.line;
+    // (XXX): need modify more common sense
+
+    doRequestOverviewTable({
+      countryName,
+      factoryName,
+      plantName,
+      lineName,
+      startDate: dateString,
+      endDate: dateString,
+    });
+    this.setState({ dateString });
+  }
   generateTableDataSource(data) {
     if (!data) { return ([]); }
     const arr = [];
-    console.log(data);
 
     _.map(data, (d, idx) => {
       arr.push({
@@ -121,16 +148,29 @@ class OverviewContainer extends Component {
   }
   render() {
     const { type, overviewTableData } = this.props;
+    const now = moment().format('YYYY/MM/DD');
+    const dateFormat = 'YYYY-MM-DD';
+    const isTableSpin = type && type.split('_')[3] === 'REQUEST' ? true : false ;
+
     return (
       <div id="overview-container">
         <Row>
           <Col span={24}>
             {this.displayInformationData(overviewTableData, type)}
           </Col>
+          <Col span={24} style={{ textAlign: 'right', paddingRight: '5px' }}>
+            <DatePicker
+              onChange={this.onDatePickerChange}
+              format={dateFormat}
+              className="info-margin"
+              defaultValue={moment(now, dateFormat)}
+            />
+          </Col>
           <Col span={24} className="col">
             <Card>
               <Table
-                dataSource={this.generateTableDataSource(overviewTableData)}
+                dataSource={this.generateTableDataSource(overviewTableData, type)}
+                loading={isTableSpin}
                 columns={overviewColumns}
               />
             </Card>

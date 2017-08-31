@@ -1,5 +1,4 @@
 import 'whatwg-fetch';
-import moment from 'moment';
 import _ from 'lodash';
 import promise from 'bluebird';
 
@@ -52,20 +51,15 @@ export const doRequestMachineName = (passProps) => {
 }
 
 export const doRequestOverviewTable = (passProps) => {
-  const { countryName, factoryName, plantName, lineName } = passProps;
-
-  // params config
-  const timeZone = 'Asia/Bangkok';
-  const date = moment().format('YYYY-MM-DD');
+  const { countryName, factoryName, plantName, lineName, startDate, endDate } = passProps;
 
   // fetch url config
   let fetchApiName = ['list/equipmentsOfLine', 'get/output', 'get/alarm'];
   let fetchBasicInfo = `?countryName="${countryName}"&factoryName="${factoryName}"`+
-    `&plantName="${plantName}"&lineName="${lineName}"&type=alarm`;
-  const timeUnit = ['', 'date', 'hour'];
+    `&plantName="${plantName}"&lineName="${lineName}"&type="alarm"&startDate="${startDate}"&endDate="${endDate}"`;
   const fetchEquipment = `${serverConfig.url}${fetchApiName[0]}${fetchBasicInfo}`;
-  const fetchOutput = `${serverConfig.url}${fetchApiName[1]}${fetchBasicInfo}&timeZone="${timeZone}"`;
-  const fetchAlarm = `${serverConfig.url}${fetchApiName[2]}${fetchBasicInfo}&timeZone="${timeZone}"&timeUnit="${timeUnit[2]}"&date="${date}"`;
+  const fetchOutput = `${serverConfig.url}${fetchApiName[1]}${fetchBasicInfo}`;
+  const fetchAlarm = `${serverConfig.url}${fetchApiName[2]}${fetchBasicInfo}`;
   const outputAlarmUrl = [fetchAlarm, fetchOutput];
 
   return (dispatch) => {
@@ -243,8 +237,8 @@ export const doRequestSummaryTable = (passProps) => {
 };
 
 export const doRequestOutput = (passProps) => {
-  const { countryName, factoryName, plantName, lineName, timeZone,
-    timeUnit, date, startDate, endDate } = passProps;
+  const { countryName, factoryName, plantName, lineName,
+    timeUnit, startDate, endDate } = passProps;
   let { equipmentName, equipmentSerial } = passProps;
 
   // fetch url config
@@ -256,10 +250,10 @@ export const doRequestOutput = (passProps) => {
     `&type=output`;
   const fetchEquipment = `${serverConfig.url}${fetchApiName[0]}${fetchBasicInfo}`;
   const fetchOutputWithoutEquipment =
-    `${serverConfig.url}${fetchApiName[1]}${fetchBasicInfo}&timeZone="${timeZone}"&timeUnit="${timeUnit}"` +
-    ( timeUnit === 'hour' ?  `&date="${date}"` : `&startDate="${startDate}"&endDate="${endDate}"` );
-  const fetchOutput = `${serverConfig.url}${fetchApiName[1]}${fetchBasicInfo}&timeZone="${timeZone}"&timeUnit="${timeUnit}&equipmentSerial="${equipmentSerial}"&equipmentName="${equipmentName}"` +
-    ( timeUnit === 'hour' ?  `&date="${date}"` : `&startDate="${startDate}"&endDate="${endDate}"` );
+    `${serverConfig.url}${fetchApiName[1]}${fetchBasicInfo}&timeUnit="${timeUnit}"` +
+    `&startDate="${startDate}"&endDate="${endDate}"`;
+  const fetchOutput = `${serverConfig.url}${fetchApiName[1]}${fetchBasicInfo}&timeUnit="${timeUnit}` +
+    `&equipmentSerial="${equipmentSerial}"&equipmentName="${equipmentName}"&startDate="${startDate}"&endDate="${endDate}"`;
 
   return (dispatch) => {
     dispatch({
@@ -295,10 +289,9 @@ export const doRequestOutput = (passProps) => {
 }
 
 export const doRequestAlarm = (passProps) => {
-  const { countryName, factoryName, plantName, lineName, timeZone,
-    timeUnit, date, startDate, endDate } = passProps;
+  const { countryName, factoryName, plantName, lineName,
+    timeUnit, startDate, endDate } = passProps;
   let { equipmentName, equipmentSerial } = passProps;
-
   // fetch url config
   const fetchApiName = ['list/equipmentsOfLine', 'get/alarm'];
   const fetchBasicInfo = `?countryName="${countryName}"`+
@@ -308,10 +301,10 @@ export const doRequestAlarm = (passProps) => {
     `&type=alarm`;
   const fetchEquipment = `${serverConfig.url}${fetchApiName[0]}${fetchBasicInfo}`;
   const fetchAlarmWithoutEquipment =
-    `${serverConfig.url}${fetchApiName[1]}${fetchBasicInfo}&timeZone="${timeZone}"&timeUnit="${timeUnit}"` +
-    ( timeUnit === 'hour' ?  `&date="${date}"` : `&startDate="${startDate}"&endDate="${endDate}"` );
-  const fetchAlarm = `${serverConfig.url}${fetchApiName[1]}${fetchBasicInfo}&timeZone="${timeZone}"&timeUnit="${timeUnit}&equipmentSerial="${equipmentSerial}"&equipmentName="${equipmentName}"` +
-    ( timeUnit === 'hour' ?  `&date="${date}"` : `&startDate="${startDate}"&endDate="${endDate}"` );
+    `${serverConfig.url}${fetchApiName[1]}${fetchBasicInfo}&timeUnit="${timeUnit}"` +
+    `&startDate="${startDate}"&endDate="${endDate}"`;
+  const fetchAlarm = `${serverConfig.url}${fetchApiName[1]}${fetchBasicInfo}&timeUnit="${timeUnit}` +
+    `&equipmentSerial="${equipmentSerial}"&equipmentName="${equipmentName}"&startDate="${startDate}"&endDate="${endDate}"` ;
 
   return (dispatch) => {
     dispatch({
@@ -366,8 +359,8 @@ export const doRequestAlarm = (passProps) => {
 }
 
 export const doRequestDowntime = (passProps) => {
-  const { countryName, factoryName, plantName, lineName, timeZone,
-    timeUnit, date, startDate, endDate } = passProps;
+  const { countryName, factoryName, plantName, lineName,
+    timeUnit, startDate, endDate } = passProps;
 
   // fetch url config
   const fetchApiName = ['list/equipmentsOfLine', 'get/alarm'];
@@ -376,8 +369,8 @@ export const doRequestDowntime = (passProps) => {
     `&plantName="${plantName}"`+
     `&lineName="${lineName}"`;
   const fetchEquipment = `${serverConfig.url}${fetchApiName[0]}${fetchBasicInfo}&type="alarm"`;
-  const fetchDowntime = `${serverConfig.url}${fetchApiName[1]}${fetchBasicInfo}&timeZone="${timeZone}"&timeUnit="${timeUnit}` +
-    ( timeUnit === 'hour' ?  `&date="${date}"` : `&startDate="${startDate}"&endDate="${endDate}"` );
+  const fetchDowntime = `${serverConfig.url}${fetchApiName[1]}${fetchBasicInfo}&timeUnit="${timeUnit}` +
+    `&startDate="${startDate}"&endDate="${endDate}"`;
 
   return (dispatch) => {
     dispatch({
