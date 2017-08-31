@@ -92,13 +92,21 @@ export const overviewColumns = [
     dataIndex: 'machineName',
     key: 'machineName',
   }, {
-    title: '閒置時間',
-    dataIndex: 'idleTime',
-    key: 'idleTime',
+    title: '待板時間',
+    dataIndex: 'waitingTime',
+    key: 'waitingTime',
   }, {
-    title: '異常時間',
-    dataIndex: 'alarmTime',
-    key: 'alarmTime',
+    title: '停工時間',
+    dataIndex: 'downTime',
+    key: 'downTime',
+  }, {
+    title: '運行時間',
+    dataIndex: 'runningTime',
+    key: 'runningTime',
+  }, {
+    title: '異常次數',
+    dataIndex: 'alarmCount',
+    key: 'alarmCount',
   }, {
     title: '稼動率',
     dataIndex: 'movementRate',

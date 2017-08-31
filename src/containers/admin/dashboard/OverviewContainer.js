@@ -63,24 +63,24 @@ class OverviewContainer extends Component {
     const informationTableData = [];
 
     // compute the time and processed
-    const startRunningTimeObj = moment().toObject();
-    const startRunningTime = moment([startRunningTimeObj.years, startRunningTimeObj.months,
-        startRunningTimeObj.date, 8, 0, 0, 0]);
-    const now = moment(moment().toArray());
-    const timeDiff = now.diff(startRunningTime);
+    // const startRunningTimeObj = moment().toObject();
+    // const startRunningTime = moment([startRunningTimeObj.years, startRunningTimeObj.months,
+    //     startRunningTimeObj.date, 8, 0, 0, 0]);
+    // const now = moment(moment().toArray());
+    // const timeDiff = now.diff(startRunningTime);
 
-    const time = !isConnect ? <Icon type="loading" /> : timeFormat(timeDiff);
-    const informationTitle = ['產線名稱', '連線狀況', '連線時間'];
+    // const time = !isConnect ? <Icon type="loading" /> : timeFormat(timeDiff);
+    const informationTitle = ['產線名稱', '廠商名稱', '連線狀況'];
     const informationIcon = ['idcard', 'share-alt', 'clock-circle-o'];
-    const informationContent = ['Seagate - ' + line, connectStatus, time];
-    const informationCardColors = ['#588ebd', connectionBgColor, '#8674a6'];
+    const informationContent = [line, 'Seagate', connectStatus];
+    const informationCardColors = ['#588ebd', '#8674a6', connectionBgColor];
 
     _.map(informationTitle, (value, key) => {
       informationTableData.push(
         <Col span={8} className="col smallCard" key={value}>
           <div className="informationCardDiv" style={{ backgroundColor: informationCardColors[key] }}>
             <Icon type={informationIcon[key]} className="overviewIcon" />
-            <b className="informationWords" style={{ fontSize: value === 'Time' ? '20px' : '30px' }}>{informationContent[key]}</b>
+            <b className="informationWords" style={{ fontSize: '30px' }}>{informationContent[key]}</b>
             <br />
             <h3 className="informationTitleName">{value}</h3>
           </div>
@@ -99,13 +99,16 @@ class OverviewContainer extends Component {
   generateTableDataSource(data) {
     if (!data) { return ([]); }
     const arr = [];
+    console.log(data);
 
     _.map(data, (d, idx) => {
       arr.push({
         key: idx,
         machineName: d.equipmentName,
-        idleTime: '00:00:00',
-        alarmTime: timeFormat(d.alarmTime),
+        waitingTime: '00:00:00',
+        downTime: '00:00:00',
+        runningTime: '00:00:00',
+        alarmCount: d.alarmCount,
         movementRate: 0 + '%',
         inputCount: d.okQuantity + d.ngQuantity,
         outputOkCount: d.okQuantity,

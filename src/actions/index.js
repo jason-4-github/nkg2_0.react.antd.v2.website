@@ -117,13 +117,12 @@ export const doRequestOverviewTable = (passProps) => {
 
           } else {
             // alarm data-processed
-            let totalTime = 0;
+            let totalCount = 0;
             dataObj.equipmentName = items.equipmentName;
-
             _.map(items.payload.status, alarmValue => {
-              if (alarmValue.totalAlarmTime) totalTime += alarmValue.totalAlarmTime;
+              if (alarmValue.count !== 0) totalCount += alarmValue.count;
             });
-            dataObj.alarmTime = totalTime;
+            dataObj.alarmCount = totalCount;
           }
           if (key === multipleFetch.length - 1) {
             dispatch({
