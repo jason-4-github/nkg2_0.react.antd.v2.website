@@ -18,6 +18,36 @@ function parseJSON(response) {
   return response.json();
 }
 
+export const doRequestCustomer = (passProps) => {
+  const { countryName, factoryName, plantName, lineName } = passProps;
+
+  return (dispatch) => {
+    dispatch({
+      type: types.ADMIN_CUSTOMER_NAME_REQUEST,
+    })
+    fetch(`${serverConfig.url}/get/customer`+
+      `?countryName="${countryName}"`+
+      `&factoryName="${factoryName}"`+
+      `&plantName="${plantName}"`+
+      `&lineName="${lineName}"`
+    )
+    .then(checkStatus)
+    .then(parseJSON)
+    .then((data) => {
+      dispatch({
+        type: types.ADMIN_CUSTOMER_NAME_SUCCESS,
+        customerName: data.message.customerName,
+      });
+    })
+    .catch(() => {
+      dispatch({
+        type: types.ADMIN_CUSTOMER_NAME_FAILURE,
+        customerName: "unknown",
+      });
+    });
+  }
+}
+
 export const doRequestMachineName = (passProps) => {
   const { countryName, factoryName, plantName, lineName } = passProps;
 
@@ -94,6 +124,7 @@ export const doRequestOverviewTable = (passProps) => {
         });
 
         promise.each(multipleFetch, (items, key, length) => {
+          console.log(items, key);
           if (key % 2) {
             // output data-processed
             const okCount = items.okQuantity ? items.okQuantity : 0;

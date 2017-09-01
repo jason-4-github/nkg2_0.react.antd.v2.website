@@ -6,7 +6,7 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 
 import { overviewColumns } from './../../../constants/tableColumns';
-import { doRequestOverviewTable } from '../../../actions';
+import { doRequestOverviewTable, doRequestCustomer } from '../../../actions';
 import timeFormat from './../../../utils/timeFormat';
 
 class OverviewContainer extends Component {
@@ -21,7 +21,7 @@ class OverviewContainer extends Component {
   }
   componentDidMount() {
     /* eslint-disable no-shadow */
-    const { doRequestOverviewTable } = this.props;
+    const { doRequestOverviewTable, doRequestCustomer } = this.props;
     /* eslint-enable no-shadow */
 
     const countryName = this.props.params.country;
@@ -30,7 +30,7 @@ class OverviewContainer extends Component {
     const lineName = this.props.params.line;
     const { dateString } = this.state;
     // (XXX): need modify more common sense
-
+    doRequestCustomer({countryName, factoryName, plantName, lineName});
     doRequestOverviewTable({
       countryName,
       factoryName,
@@ -40,7 +40,7 @@ class OverviewContainer extends Component {
       endDate: dateString,
     });
   }
-  displayInformationData(overviewTableData, type) {
+  displayInformationData(overviewTableData, type, customerName) {
     if (type === 'ADMIN_OVERVIEW_INFORMATION_REQUEST') {
       return (<div><Spin /></div>);
     }
@@ -78,7 +78,7 @@ class OverviewContainer extends Component {
     // const time = !isConnect ? <Icon type="loading" /> : timeFormat(timeDiff);
     const informationTitle = ['產線名稱', '廠商名稱', '連線狀況'];
     const informationIcon = ['idcard', 'share-alt', 'clock-circle-o'];
-    const informationContent = [line, 'Seagate', connectStatus];
+    const informationContent = [line, customerName, connectStatus];
     const informationCardColors = ['#588ebd', '#8674a6', connectionBgColor];
 
     _.map(informationTitle, (value, key) => {
@@ -124,30 +124,72 @@ class OverviewContainer extends Component {
     });
     this.setState({ dateString });
   }
+
   generateTableDataSource(data) {
     if (!data) { return ([]); }
-    const arr = [];
+    let arr = [];
+    const typeObj = {};
 
+    // build the group of data
     _.map(data, (d, idx) => {
-      arr.push({
-        key: idx,
-        machineName: d.equipmentName,
-        waitingTime: '00:00:00',
-        downTime: '00:00:00',
-        runningTime: '00:00:00',
-        alarmCount: d.alarmCount,
-        movementRate: 0 + '%',
-        inputCount: d.okQuantity + d.ngQuantity,
-        outputOkCount: d.okQuantity,
-        outputNgCount: d.ngQuantity,
-        yieldRate: d.yieldRate,
-      });
+      const equipmentType = d.equipmentName.split('-')[0];
+      const findIndex = _.findIndex(arr, ['machineName', equipmentType]);
+      if (findIndex !== -1) {
+        arr[findIndex].alarmCount += d.alarmCount;
+        arr[findIndex].inputCount += d.okQuantity + d.ngQuantity;
+        arr[findIndex].outputOkCount += d.okQuantity;
+        arr[findIndex].outputNgCount += d.ngQuantity;
+        arr[findIndex].yieldRate =
+          ((arr[findIndex].outputOkCount / arr[findIndex].inputCount) * 100).toFixed(2) + '%';
+      } else {
+        arr.push({
+          key: idx,
+          machineName: equipmentType,
+          waitingTime: '00:00:00',
+          downTime: '00:00:00',
+          runningTime: '00:00:00',
+          alarmCount: d.alarmCount,
+          movementRate: 0 + '%',
+          inputCount: d.okQuantity + d.ngQuantity,
+          outputOkCount: d.okQuantity,
+          outputNgCount: d.ngQuantity,
+          yieldRate: d.yieldRate,
+          children: [],
+        });
+      }
+    });
+
+    // sorted the group of data, like: router -> ict
+    arr = _.sortBy(arr, (dataGroup) => { return dataGroup.equipmentName; }).reverse();
+
+    // sorted the children data, like: ict1 -> ict2
+    const sortedChildrenData = _.sortBy(data, (o) => { return o.equipmentName; });
+
+    // combine the children to group
+    _.map(sortedChildrenData, (d, idx) => {
+      const equipmentType = d.equipmentName.split('-')[0];
+      const findIndex = _.findIndex(arr, ['machineName', equipmentType]);
+      if (findIndex !== -1) {
+        arr[findIndex].children.push({
+          key: equipmentType + '_' + idx,
+          machineName: d.equipmentName,
+          waitingTime: '00:00:00',
+          downTime: '00:00:00',
+          runningTime: '00:00:00',
+          alarmCount: d.alarmCount,
+          movementRate: 0 + '%',
+          inputCount: d.okQuantity + d.ngQuantity,
+          outputOkCount: d.okQuantity,
+          outputNgCount: d.ngQuantity,
+          yieldRate: d.yieldRate,
+        });
+      }
     });
 
     return arr;
   }
   render() {
-    const { type, overviewTableData } = this.props;
+    const { type, overviewTableData, customerName } = this.props;
     const now = moment().format('YYYY/MM/DD');
     const dateFormat = 'YYYY-MM-DD';
     const isTableSpin = type && type.split('_')[3] === 'REQUEST' ? true : false ;
@@ -156,7 +198,7 @@ class OverviewContainer extends Component {
       <div id="overview-container">
         <Row>
           <Col span={24}>
-            {this.displayInformationData(overviewTableData, type)}
+            {this.displayInformationData(overviewTableData, type, customerName)}
           </Col>
           <Col span={24} style={{ textAlign: 'right', paddingRight: '5px' }}>
             <DatePicker
@@ -194,5 +236,6 @@ const mapStateToProps = (state) => {
 
 export default connect(
   mapStateToProps,
-  { doRequestOverviewTable },
+  { doRequestOverviewTable,
+    doRequestCustomer },
 )(OverviewContainer);
